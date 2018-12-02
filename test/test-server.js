@@ -18,3 +18,25 @@ describe("index page", function() {
       });
   });
 });
+
+describe("profile page", function() {
+  it("should exist", function() {
+    return chai
+      .request(app)
+      .get("/profile.html")
+      .then(function(res) {
+        expect(res).to.have.status(200);
+      });
+  });
+});
+
+describe("search page", function() {
+  it("should exist", function() {
+    return chai
+      .request(app)
+      .get("/search.html")
+      .then(function(res) {
+        expect(res).to.have.status(200);
+      });
+  });
+});

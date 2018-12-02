@@ -66,9 +66,7 @@ $(function() {
     getAndDisplayProfileData();
 })
 
-
-//Data Provided for Queried Data:  
-// Example: All Programs by alouie1020
+// For when searching for programs
 var MOCK_PROGRAM_DATA = [
     {
         id: 1230984921,
@@ -488,7 +486,8 @@ function displayProgramData(data) {
                 for (const prop in exercise) {
                     if (prop === "name") {
                         $('body').append(
-                            `<b>Name</b>: ${exercise[prop]}`
+                            `<br />
+                            <b>Exercise</b>: ${exercise[prop]}`
                         )
                     } else {
                         $('body').append(

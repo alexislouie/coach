@@ -4,6 +4,7 @@ var MOCK_PROFILE_DATA = {
     lastName: "Louie",
 	userName: "alouie1020",
     programs: [
+        // only displays Program's Name & Author 
         {
             id: 1230984921,
             name: "7 Days of Dumbbells",
@@ -39,13 +40,22 @@ function getProfileData(callback) {
 
 function displayProfileData(data) {
     $('body').append(`
-        <p>Welcome Back ${data.userName}!</p>`
-        // More info here about user data
-    )
-    // for (index in data.profileInfo) {
-    //     $('body').append(
-    //         'p' + data.profileInfo[index].text + '</p>');
-    // }
+        <p>Welcome Back ${data.userName}!</p>
+        <p>Your Programs:</p>
+    `);
+    for (program of data.programs) {
+        $('body').append(`
+        <li>${program.name} by ${program.author}</li>
+        `)
+    }
+    $('body').append(`
+        <p>Your Saved Programs:</p>
+    `);
+    for (program of data.savedPrograms) {
+        $('body').append(`
+            <li>${program.name} by ${program.author}</li>
+        `)
+    }
 }
 
 function getAndDisplayProfileData() {
@@ -454,3 +464,48 @@ var MOCK_PROGRAM_DATA = [
         ]
     }
 ]
+
+function getProgramData(callback) {
+    setTimeout(function() { callback(MOCK_PROGRAM_DATA)}, 100);
+}
+
+function displayProgramData(data) {
+    for (program of data) {
+        const { programName, author, schedule } = program;
+        $('body').append(`
+            <h2>${programName}</h2>
+            by ${author}
+        `);
+        for (day of schedule) {
+            const { exercises } = day;
+            // if it's a single workout (i.e. not an entire program), this wont exist
+            if (day.name) {
+                $('body').append(`
+                    <h3>${day.name}</h3>
+                `);
+            }
+            for (exercise of exercises) {
+                for (const prop in exercise) {
+                    if (prop === "name") {
+                        $('body').append(
+                            `<b>Name</b>: ${exercise[prop]}`
+                        )
+                    } else {
+                        $('body').append(
+                            `<li>${prop}: ${exercise[prop]}</li>`
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+function getAndDisplayProgramData() {
+    getProgramData(displayProgramData);
+}
+
+$(function() {
+    getAndDisplayProgramData();
+})
+

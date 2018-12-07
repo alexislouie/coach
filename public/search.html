@@ -7,24 +7,26 @@
     <title>Coaching App</title>
     <meta name="description" content="If you fell through the Earth, where would you land?">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway" rel="stylesheet">
+	<link rel="stylesheet" href="main.css">
 </head>
 
 <body>
     <main>
-        <form>
+        <form class="search-form">
             <select name="searchCat">
                 <option value="programName">Program Title</option>
                 <option value="category">Category</option>
                 <option value="author">Author</option>
             </select>
-            <input type="text">
+            <input type="text" class="searchbox">
             <button type="submit">Search</button>
         </form>
     </main>
 
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
         crossorigin="anonymous"></script>
-    <script src="../app.js"></script>
+    <script src="../search.js"></script>
 </body>
 
 </html>

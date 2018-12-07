@@ -40,7 +40,7 @@ function getProfileData(callback) {
 
 function displayProfileData(data) {
     $('body').prepend(`
-        <p>Welcome Back ${data.userName}!</p>
+        <h1>Welcome Back ${data.userName}!</h1>
     `);
     $('.js-user-programs').prepend('<p>Your Programs:</p>');
     for (program of data.programs) {
@@ -262,7 +262,7 @@ $(function () {
 })
 
 // For when searching for programs
-// var MOCK_PROGRAM_DATA = [
+// const MOCK_PROGRAM_DATA = [
 //     {
 //         id: 1230984921,
 //         programName: "7 Days of Dumbbells",

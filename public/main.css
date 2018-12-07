@@ -1,0 +1,26 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12pt;
+    color: #686c70;
+    font-weight: 100;   
+}
+
+h1 {
+    font-family: 'Raleway', sans-serif;
+    font-weight: 100;
+}
+
+.search-form {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}
+
+.searchbox {
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: solid 2px #686c70;
+    width: 450px;
+}

@@ -7,9 +7,12 @@ const userSchema = mongoose.Schema({
     userName: {
         type: 'string',
         unique: true
-    }
+    },
+    // programs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }],
+    // savedPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }]
 });
 
+// leaves out PW
 userSchema.methods.serialize = function() {
     return {
         id: this._id,

@@ -8,7 +8,7 @@ const userSchema = mongoose.Schema({
         type: 'string',
         unique: true
     },
-    // programs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }],
+    // userPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }],
     // savedPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }]
 });
 

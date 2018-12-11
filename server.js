@@ -60,8 +60,32 @@ app.post('/users', jsonParser, (req, res) => {
       console.error(err);
       res.status(500).json({ error: 'Something went wrong' });
     });
-
 });
+
+app.get('/programs', (req, res) => {
+  Program
+    .find()
+    .then(programs => {
+      res.json({
+        programs: programs.map(program => program.serialize())
+      })
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ error: 'Internal Server Error'});
+    });
+})
+
+// FOR CREATING PROGRAM  
+// User
+//   .findOne()
+//   .then(user => {
+//     Program
+//       .create({
+//         programName: req.body.programName,
+//         author: user._id
+//       });
+//   });
 
 let server;
 

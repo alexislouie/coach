@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise; 
+mongoose.Promise = global.Promise;
 
 const userSchema = mongoose.Schema({
     firstName: 'string',
@@ -13,7 +13,7 @@ const userSchema = mongoose.Schema({
 });
 
 // leaves out PW
-userSchema.methods.serialize = function() {
+userSchema.methods.serialize = function () {
     return {
         id: this._id,
         firstName: this.firstName,
@@ -24,29 +24,60 @@ userSchema.methods.serialize = function() {
 
 const programSchema = mongoose.Schema({
     programName: 'string',
-    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, 
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     categories: ['string'],
     schedule: [
         {
             name: { type: 'string', required: false }, // optional in case user is just submitting a single routine
-            exercises: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' }]
+            exercises: 
+                [
+                    {
+                        exercise: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' },
+                        sets: { type: Number, required: false },
+                        reps: { type: Number, required: false },
+                        distance: { type: Number, required: false },
+                        unitLength: { type: 'string', required: false },
+                        time: { type: Number, required: false },
+                        unitTime: { type: 'string', required: false },
+                        comments: { type: 'string', required: false }
+                    }
+                ]
         }
     ]
 });
 
+programSchema.pre('find', function (next) {
+    this.populate('author');
+    this.populate('schedule.exercises.exercise');
+    next();
+});
+
+programSchema.pre('findOne', function (next) {
+    this.populate('author');
+    this.populate('schedule.exercises.exercise');
+    next();
+});
+
+programSchema.virtual('authorUserName').get(function () {
+    return `${this.author.userName}`;
+});
+
+programSchema.methods.serialize = function () {
+    return {
+        id: this._id,
+        programName: this.programName,
+        author: this.authorUserName,
+        categories: this.categories,
+        schedule: this.schedule
+    }
+}
+
 const exerciseSchema = mongoose.Schema({
-    name: { type: 'string', required: true },
-    sets: { type: Number, required: false },
-    reps: { type: Number, required: false },
-    distance: { type: Number, required: false }, 
-    unitLength: { type: 'string', required: false },
-    time: { type: Number, required: false },
-    unitTime: { type: 'string', required: false },
-    comments: { type: 'string', required: false }
+    name: { type: 'string', required: true }
 });
 
 const User = mongoose.model('User', userSchema);
 const Program = mongoose.model('Program', programSchema);
 const Exercise = mongoose.model('Exercise', exerciseSchema);
 
-module.exports = { User, Program, Exercise};
+module.exports = { User, Program, Exercise };

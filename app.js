@@ -257,6 +257,10 @@ function getAndDisplayProfileData() {
     getProfileData(displayProfileData);
 }
 
+function handleSubmitButton(){
+    // CONFIRM THAT Exercise Name IS INCLUDED 
+}
+
 $(function () {
     getAndDisplayProfileData();
 })

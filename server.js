@@ -6,11 +6,14 @@ mongoose.Promise = global.Promise;
 
 const {PORT, DATABASE_URL} = require('./config');
 const userRouter = require('./usersRouter');
-const programRouter = require('./programsRouter');
+const programsRouter = require('./programsRouter');
 
 const app = express();
 
-app.use(morgan('common'));
+if (require.main === module) {
+  app.use(morgan('common'));
+}
+
 app.use(express.static("public"));
 
 // app.get('/', (req, res) => {
@@ -18,7 +21,7 @@ app.use(express.static("public"));
 // });
 
 app.use('/users', userRouter);
-app.use('/programs', programRouter);
+app.use('/programs', programsRouter);
 
 let server;
 

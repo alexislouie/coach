@@ -12,6 +12,13 @@ const userSchema = mongoose.Schema({
     // savedPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }]
 });
 
+// Programs that the user has written 
+userSchema.virtual('userPrograms', {
+    ref: 'Program',
+    localField: '_id',
+    foreignField: 'author'
+  });
+
 // leaves out PW
 userSchema.methods.serialize = function () {
     return {
@@ -46,20 +53,19 @@ const programSchema = mongoose.Schema({
     ]
 });
 
+// programSchema.pre('findByIdAndRemove', function(next) {
+//     this.model('User').remove({ userPrograms: this._id }, next);
+//     this.model('User').remove({ savedPrograms: this._id }, next);
+// });
+
 programSchema.pre('find', function (next) {
     this.populate('author');
     this.populate('schedule.exercises.exercise');
     next();
 });
 
-programSchema.pre('findOne', function (next) {
-    this.populate('author');
-    this.populate('schedule.exercises.exercise');
-    next();
-});
-
 programSchema.virtual('authorUserName').get(function () {
-    return `${this.author.userName}`;
+    return this.author.userName;
 });
 
 programSchema.methods.serialize = function () {

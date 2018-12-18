@@ -31,7 +31,7 @@ router.get('/:id', (req, res) => {
 
 router.post('/', jsonParser, (req, res) => {
     const requiredFields = ['firstName', 'lastName', 'userName'];
-    for (let i = 0; i <= requiredFields.length; i++) {
+    for (let i = 0; i < requiredFields.length; i++) {
         const field = requiredFields[i];
         if (!(field in req.body)) {
             const message = `Missing \`${field}\` in request body`;
@@ -49,7 +49,7 @@ router.post('/', jsonParser, (req, res) => {
         .then(user => res.status(201).json(user.serialize()))
         .catch(err => {
             console.error(err);
-            res.status(500).json({ error: 'Something went wrong' });
+            res.status(500).json({ error: 'Internal Server Error' });
         });
 });
 

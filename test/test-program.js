@@ -7,44 +7,58 @@ const faker = require('faker');
 
 const expect = chai.expect;
 
-const {Program} = require('../models');
-const {app, runServer, closeServer} = require('../server');
-const {TEST_DATABASE_URL} = require('../config');
+const { Program, User, Exercise } = require('../models');
+const { app, runServer, closeServer } = require('../server');
+const { TEST_DATABASE_URL } = require('../config');
 
 chai.use(chaiHttp);
 
-function seedProgramData() {
+function seedProgramData(user, exercise) {
     console.info('seeding program data');
     const seedData = [];
-  
-    for (let i = 1; i <= 2; i++) {
-      seedData.push(generateProgramData());
-    }
-    // console.log(seedData);
-    return Program.insertMany(seedData);
-  }
 
-function generateProgramData() { 
+    for (let i = 1; i <= 2; i++) {
+        seedData.push(generateProgramData(user, exercise));
+    }
+
+    return Program.insertMany(seedData)
+}
+
+function seedExercise() {
+    return Exercise.create({
+        name: faker.lorem.words()
+    })
+}
+
+function seedAuthor() {
+    return User.create({
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName(),
+        userName: faker.internet.userName()
+    })
+}
+
+function generateProgramData(user, exercise) {
     return {
         programName: faker.lorem.words(),
-        author: {_id: '5af50c84c082f1e92f83420a', firstName: faker.name.firstName(), lastName: faker.name.lastName(), userName: faker.internet.userName()},
-        categories: [faker.lorem.word(), faker.lorem.word(),faker.lorem.word()],
+        author: mongoose.Types.ObjectId(user._id),
+        categories: [faker.lorem.word(), faker.lorem.word(), faker.lorem.word()],
         schedule: [
             {
                 name: faker.lorem.words(),
                 exercises: [
                     {
-                        exercise: '5c0df44f7a125fc599955de7',
+                        exercise: mongoose.Types.ObjectId(exercise._id),
                         sets: faker.random.number(),
                         reps: faker.random.number(),
                     },
                     {
-                        exercise: '5c0df44f7a125fc599955de6',
+                        exercise: mongoose.Types.ObjectId(exercise._id),
                         distance: faker.random.number(),
                         time: faker.random.number(),
                     },
                     {
-                        exercise: '5c0df44f7a125fc599955de5',
+                        exercise: mongoose.Types.ObjectId(exercise._id),
                         sets: faker.random.number(),
                         time: faker.random.number(),
                     },
@@ -57,27 +71,33 @@ function generateProgramData() {
 function tearDownDb() {
     console.warn('Deleting Database');
     return mongoose.connection.dropDatabase();
-  }
+}
 
-describe('Program API resource', function() {
-    before(function() {
+describe('Program API resource', function () {
+    before(function () {
         return runServer(TEST_DATABASE_URL);
     });
 
-    beforeEach(function() {
-        return seedProgramData();
+    beforeEach(function () {
+        return seedExercise()
+        .then(exercise => {
+          return seedAuthor()
+            .then(author => ({exercise, author}))
+        })
+            .then(({exercise, author}) => seedProgramData(author, exercise))
+            .catch(err => console.log(err));
     })
 
-    afterEach(function() {
+    afterEach(function () {
         return tearDownDb();
     });
 
-    after(function() {
+    after(function () {
         return closeServer();
     });
 
-    describe.skip('GET endpoint', function() {
-        it('should return all existing programs', function() {
+    describe.skip('GET endpoint', function () {
+        it('should return all existing programs', function () {
             let res;
             return chai.request(app)
                 .get('/programs')
@@ -92,7 +112,7 @@ describe('Program API resource', function() {
                     expect(res.body.programs).to.have.lengthOf(count);
                 })
         })
-        it('should return programs with the right fields', function() {
+        it('should return programs with the right fields', function () {
             let resProgram;
             return chai.request(app)
                 .get('/programs')
@@ -105,8 +125,7 @@ describe('Program API resource', function() {
                     res.body.programs.forEach(program => {
                         expect(program).to.be.an('object');
                         expect(program).to.include.keys('id', 'programName', 'author', 'categories', 'schedule');
-                        // expect(program.schedule).to.be.an('array');
-                        // expect(program.schedule).to.have.lengthOf.at.least(1);
+                        expect(program.schedule).to.have.lengthOf.at.least(1);
                     });
 
                     resProgram = res.body.programs[0];
@@ -114,21 +133,36 @@ describe('Program API resource', function() {
                 })
                 .then(program => {
                     expect(resProgram.programName).to.equal(program.programName);
-                    expect(resProgram.author).to.equal(program.author);
-                    expect(resProgram.categories).to.equal(program.categories);
-                    expect(resProgram.schedule).to.equal(program.schedule);
+                    User.findById(program.author)
+                        .then(author => expect(resProgram.author).to.equal(author.userName));
+                    expect(resProgram.categories).to.deep.equal(program.categories);
+
+                    const exerciseIds = [];
+                    program.schedule.forEach(day => {
+                        day.exercises.forEach(exercise => {
+                            exerciseIds.push(exercise._id.toString())
+                        });
+                    })
+                    return exerciseIds
+                })
+                .then(exerciseIds => {
+                    const resProgramIds = [];
+                    resProgram.schedule.forEach(day => {
+                        day.exercises.forEach(exercise => resProgramIds.push(exercise._id));
+                    })
+                    expect(exerciseIds).to.deep.equal(resProgramIds);
                 });
         });
     })
 
-    describe.skip('POST endpoint', function(){
-        it('should add a new program', function() {
+    describe.only('POST endpoint', function () {
+        it('should add a new program', function () {
             const newProgram = generateProgramData();
-            
+
             return chai.request(app)
-                .post('/program')
+                .post('/programs')
                 .send(newProgram)
-                .then(function(res) {
+                .then(function (res) {
                     expect(res).to.have.status(201);
                     expect(res).to.be.json;
                     expect(res.body).to.be.an('object');
@@ -137,12 +171,12 @@ describe('Program API resource', function() {
                     expect(res.body.id).to.not.be.null;
                     expect(res.body.programName).to.equal(newProgram.programName);
                     expect(res.body.author).to.equal(newProgram.author);
-                    expect(res.body.categories).to.equal(newProgram.categories);
-                    expect(res.body.schedule).to.equal(newProgram.schedule);
+                    // expect(res.body.categories).to.equal(newProgram.categories);
+                    // expect(res.body.schedule).to.equal(newProgram.schedule);
 
                     return Program.findById(res.body.id);
                 })
-                .then(function(program) {
+                .then(function (program) {
                     expect(program.programName).to.equal(newProgram.programName);
                     expect(program.author).to.equal(newProgram.author);
                     expect(program.categories).to.equal(newProgram.categories);

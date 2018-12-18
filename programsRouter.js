@@ -7,7 +7,7 @@ const { Program, Exercise } = require('./models');
 
 router.get('/', (req, res) => {
     // const filters = {};
-    // const queryableFields = ['title', 'author', 'categories',];
+    // const queryableFields = ['programName', 'author', 'categories',];
     // queryableFields.forEach(field => {
     //     if (req.query[field]) {
     //         filters[field] = req.query[field];
@@ -86,70 +86,6 @@ router.post('/', jsonParser, (req, res) => {
             }
         }
     }
-
-    // Create documents for any exercises that aren't already in Exercise Collection
-    // req.body.schedule.forEach(day => {
-    //     day.exercises.forEach(exercise => {
-    //         const exerciseName = exercise.exercise;
-    //         Exercise
-    //             .find({ name: exerciseName }).count()
-    //             .then(count => {
-    //                 if (count == 0) {
-    //                     Exercise.create({ name: exerciseName })
-    //                 }
-    //             })
-    //             .catch(err => {
-    //                 console.error(err);
-    //                 res.status(500).json({ error: 'Internal Server Error' })
-    //             })
-    //     })
-    // })
-
-    // Creates documents for any exercises that aren't already in Exercise Collection
-    // Replaces Exercise Name with Exercise IDs in the Schedule
-    const scheduleWithIds = req.body.schedule; 
-    scheduleWithIds.forEach(day => {
-        day.exercises.forEach(exercise => {
-            const exerciseName = exercise.exercise;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
-            Exercise
-                .find({ name: exerciseName }).count()
-                .then(count => {
-                    if (count == 0) {
-                        Exercise.create({ name: exerciseName })
-                    }
-                })
-                .then(() => Exercise.findOne({ name: exerciseName }, { _id: 1 })._id)
-                .then((id) => exercise.exerise = id)
-                .catch(err => {
-                    console.error(err);
-                    res.status(500).json({ error: 'Internal Server Error' })
-                })
-        })
-    })
-    res.send(scheduleWithIds);
-
-    // Same as above, but as a for loop
-    // const scheduleWithIds = req.body.schedule; 
-    // for (let i = 0; i < scheduleWithIds.length; i++ ) {
-    //     for (let j = 0; j < scheduleWithIds[i].exercises.length; j++ ) {
-    //         const exerciseName = scheduleWithIds[i].exercises[j]
-    //         Exercise
-    //             .find({ name: exerciseName }).count()
-    //             .then(count => {
-    //                 if (count == 0) {
-    //                     Exercise.create({ name: exerciseName })
-    //                 }
-    //             })
-    //             .then(() => Exercise.findOne({ name: exerciseName }, { _id: 1 })._id)
-    //             .then(id => scheduleWithIds[i].exercises[j].exercise = id)
-    //             .catch(err => {
-    //                 console.error(err);
-    //                 res.status(500).json({ error: 'Internal Server Error' })
-    //             })
-    //     }
-    // }
-    
-
 
     // Author will come from Authentication 
     // User

@@ -1,13 +1,25 @@
+const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 const userSchema = mongoose.Schema({
-    firstName: 'string',
-    lastName: 'string',
+    firstName: {
+        type: 'string',
+        required: true
+    },
+    lastName: {
+        type: 'string',
+        required: true
+    },
     userName: {
         type: 'string',
+        required: true,
         unique: true
     },
+    password: {
+        type: 'string',
+        required: true
+    }
     // userPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }],
     // savedPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }]
 });
@@ -27,6 +39,14 @@ userSchema.methods.serialize = function () {
         lastName: this.lastName,
         userName: this.userName
     };
+};
+
+userSchema.methods.validatePassword = function(password) {
+    return bcrypt.compare(password, this.password);
+};
+
+userSchema.statics.hashPassword = function(password) {
+    return bcrypt.hash(password, 10);
 };
 
 const programSchema = mongoose.Schema({
@@ -81,6 +101,13 @@ programSchema.methods.serialize = function () {
 const exerciseSchema = mongoose.Schema({
     name: { type: 'string', required: true }
 });
+
+exerciseSchema.methods.serialize = function () {
+    return {
+        id: this._id,
+        name: this.name
+    }
+}
 
 const User = mongoose.model('User', userSchema);
 const Program = mongoose.model('Program', programSchema);

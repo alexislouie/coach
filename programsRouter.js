@@ -3,19 +3,18 @@ const router = express.Router();
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
 
-const { Program, Exercise } = require('./models');
+const { Program } = require('./models');
 
 router.get('/', (req, res) => {
-    // const filters = {};
-    // const queryableFields = ['programName', 'author', 'categories',];
-    // queryableFields.forEach(field => {
-    //     if (req.query[field]) {
-    //         filters[field] = req.query[field];
-    //     }
-    // });
+    const filters = {};
+    const queryableFields = ['programName', 'author', 'categories',];
+    queryableFields.forEach(field => {
+        if (req.query[field]) {
+            filters[field] = req.query[field];
+        }
+    });
     Program
-        // .find(filters)
-        .find()
+        .find(filters)
         .then(programs => {
             res.json({
                 programs: programs.map(program => program.serialize())
@@ -88,37 +87,18 @@ router.post('/', jsonParser, (req, res) => {
     }
 
     // Author will come from Authentication 
-    // User
-    //   .findOne()
-    //   .then(user => {
-    //     Program
-    //       .create({
-    //         programName: req.body.programName,
-    //         author: user._id,
-    //         categories: req.body.categories,
-    //         schedule: scheduleWithIds
-    //       });
-    //   });
-
-    // ***********
-    // Create Program 
-    // Program
-    //     .create({
-    //         programName: req.body.programName,
-    //         author: req.body.author,
-    //         categories: req.body.categories,
-    //         schedule: scheduleWithIds
-    //     })
-
-
-
-    // iterate over req.body.schedule.exercises array 
-    // Find ID in the array 
-    // If ID is NOT in Exercises and then create Exercise 
-    // THEN return Exercises 
-    // 
-
-
+    // req.body will have objectIDs already included
+    User
+      .findOne()
+      .then(user => {
+        Program
+          .create({
+            programName: req.body.programName,
+            author: user._id,
+            categories: req.body.categories,
+            schedule: req.body.schedule
+          });
+      });
 })
 
 module.exports = router;

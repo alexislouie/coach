@@ -1,10 +1,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const passport = require('passport');
 
 const { User } = require('./models');
 
 const router = express.Router();
 const jsonParser = bodyParser.json();
+
+// Middleware for Authentication
+const jwtAuth = passport.authenticate('jwt', { session: false });
+
 
 // router.get('/', (req, res) => {
 //     User
@@ -17,7 +22,8 @@ const jsonParser = bodyParser.json();
 // })
 
 // will have to include users' programs/the program virtual I created before
-router.get('/:id', (req, res) => {
+// this is now protected by jwtAuth
+router.get('/:id', jwtAuth, (req, res) => {
     User
         .findById(req.params.id)
         .then(user => res.json(user.serialize()))
@@ -59,13 +65,13 @@ router.post('/register', jsonParser, (req, res) => {
             code: 422,
             reason: 'ValidationError',
             message: 'Cannot start or end with whitespace',
-            location: nonTrimmedField
+            location: notTrimmedFields
         })
     }
 
     const fieldSizes = {
         userName: {
-            min: 1, 
+            min: 3, 
             max: 10
         },
         password: {
@@ -98,20 +104,22 @@ router.post('/register', jsonParser, (req, res) => {
     firstName = firstName.trim();
     lastName = lastName.trim();
 
-    return User.find({userName})
+    return User
+        .find({userName: userName})
         .count()
         .then(count => {
             if (count > 0) {
+                // why is this Promise.reject and not res.status(422).json?
                 return Promise.reject({
                     code: 422,
-                    reason: 'Validation Error',
+                    reason: 'ValidationError',
                     message: 'Username already taken',
                     location: 'username'
-                });
+                  });
             }
             return User.hashPassword(password);
         })
-        .then(hash => {
+        .then(hash => { 
             return User
                 .create({
                     firstName,

@@ -11,27 +11,30 @@ const jsonParser = bodyParser.json();
 const jwtAuth = passport.authenticate('jwt', { session: false });
 
 
-// router.get('/', (req, res) => {
-//     User
-//         .find()
-//         .then(users => res.json({ users: users.map(user => user.serialize()) }))
-//         .catch(err => {
-//             console.error(err);
-//             res.status(500).json({ error: 'Internal Server Error' });
-//         });
-// })
+router.get('/', jwtAuth, (req, res) => {
+    User
+        .find()
+        .then(users => res.json({ users: users.map(user => user.serialize()) }))
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ error: 'Internal Server Error' });
+        });
+})
 
 // will have to include users' programs/the program virtual I created before
 // this is now protected by jwtAuth
 router.get('/:id', jwtAuth, (req, res) => {
     User
         .findById(req.params.id)
+        .populate('userPrograms')
         .then(user => res.json(user.serialize()))
         .catch(err => {
             console.error(err);
             res.status(500).json({ error: 'Internal Server Error' });
         });
 });
+
+
 
 router.post('/register', jsonParser, (req, res) => {
     const requiredFields = ['firstName', 'lastName', 'userName', 'password'];

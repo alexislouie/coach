@@ -16,6 +16,31 @@ const createAuthToken = function(user) {
   });
 };
 
+// router.use(bodyParser.json());
+// router.post('/login',
+//   function (req, res, next) {
+//     passport.authenticate('local', function (error, user, info) {
+//       console.log('error: ', error);
+//       console.log('user: ', user);
+//       console.log('info: ', info);
+
+//       if (error) {
+//         res.status(401).send(error);
+//       } else if (!user) {
+//         res.status(401).send(info);
+//       } else {
+//         next();
+//       }
+
+//     })(req, res);
+//   }, (req, res) => {
+//     // console.log(req.body)
+//     const authToken = createAuthToken(req.user.serialize());
+//     res.json({authToken});
+//     res.status(200).json({authToken});
+//   });
+
+
 const localAuth = passport.authenticate('local', {session: false});
 router.use(bodyParser.json());
 router.post('/login', localAuth, (req, res) => {

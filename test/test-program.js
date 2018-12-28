@@ -158,6 +158,75 @@ describe('Program API resource', function () {
     describe.only('POST endpoint', function () {
         it('should add a new program', function () {
             const newProgram = generateProgramData();
+            return chai.request(app)
+                .post('/programs')
+                .send(newProgram)
+                .then(function (res) {
+                    expect(res).to.have.status(201);
+                    expect(res).to.be.json;
+                    expect(res.body).to.be.an('object');
+                    expect(res.body).to.include.keys(
+                        'id', 'programName', 'author', 'categories', 'schedule');
+                    expect(res.body.id).to.not.be.null;
+                    expect(res.body.programName).to.equal(newProgram.programName);
+                    expect(res.body.author).to.equal(newProgram.author);
+                    // expect(res.body.categories).to.equal(newProgram.categories);
+                    // expect(res.body.schedule).to.equal(newProgram.schedule);
+
+                    return Program.findById(res.body.id);
+                })
+                .then(function (program) {
+                    expect(program.programName).to.equal(newProgram.programName);
+                    expect(program.author).to.equal(newProgram.author);
+                    expect(program.categories).to.equal(newProgram.categories);
+                    expect(program.schedule).to.equal(newProgram.schedule);
+                });
+        });
+    });
+
+    describe('PUT endpoint', function () {
+        // strategy:
+        //  1. Get an existing post from db
+        //  2. Make a PUT request to update that post
+        //  4. Prove post in db is correctly updated
+        it('should update a program', function () {
+            const newProgram = generateProgramData();
+
+            const updateProgram = {
+                programName: 'cats cats cats',
+                categories: ['Chest', 'Shoulders'],
+                schedule: []
+              };
+              
+            return chai.request(app)
+                .post('/programs')
+                .send(newProgram)
+                .then(function (res) {
+                    expect(res).to.have.status(201);
+                    expect(res).to.be.json;
+                    expect(res.body).to.be.an('object');
+                    expect(res.body).to.include.keys(
+                        'id', 'programName', 'author', 'categories', 'schedule');
+                    expect(res.body.id).to.not.be.null;
+                    expect(res.body.programName).to.equal(newProgram.programName);
+                    expect(res.body.author).to.equal(newProgram.author);
+                    // expect(res.body.categories).to.equal(newProgram.categories);
+                    // expect(res.body.schedule).to.equal(newProgram.schedule);
+
+                    return Program.findById(res.body.id);
+                })
+                .then(function (program) {
+                    expect(program.programName).to.equal(newProgram.programName);
+                    expect(program.author).to.equal(newProgram.author);
+                    expect(program.categories).to.equal(newProgram.categories);
+                    expect(program.schedule).to.equal(newProgram.schedule);
+                });
+        });
+    });
+
+    describe('DELETE endpoint', function () {
+        it('should add a new program', function () {
+            const newProgram = generateProgramData();
 
             return chai.request(app)
                 .post('/programs')

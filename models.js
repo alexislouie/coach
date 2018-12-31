@@ -21,7 +21,7 @@ const userSchema = mongoose.Schema({
         required: true
     }
     // savedPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }]
-});
+}, { toJSON: { virtuals: true }, toObject: { virtuals: true }});
 
 // Programs that the user has written 
 userSchema.virtual('userProgramsVirtual', {
@@ -70,7 +70,7 @@ const programSchema = mongoose.Schema({
                 ]
         }
     ]
-}, { toObject: { virtuals: true } });
+});
 
 // programSchema.pre('findByIdAndRemove', function(next) {
 //     this.model('User').remove({ userPrograms: this._id }, next);

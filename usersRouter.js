@@ -26,7 +26,8 @@ router.get('/', jwtAuth, (req, res) => {
 router.get('/:id', jwtAuth, (req, res) => {
     User
         .findById(req.params.id)
-        .populate('userPrograms')
+        .populate('userProgramsVirtual')
+        // .then(console.log)
         .then(user => res.json(user.serialize()))
         .catch(err => {
             console.error(err);

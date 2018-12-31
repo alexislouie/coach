@@ -31,25 +31,70 @@ router.get('/', (req, res) => {
             console.error(err);
             res.status(500).json({ error: 'Internal Server Error' });
         });
-})
+});
 
 router.get('/:id', (req, res) => {
     Program
         .findById(req.params.id)
         .then(program => res.json(program.serialize()))
-})
+});
 
+// get specific day in a program
 router.get('/:id/schedule/:schedule_id', (req, res) => {
     Program
         .findById(req.params.id)
         .select('schedule')
         .then(program => res.json(program.schedule[req.params.schedule_id]))
-})
+});
 
-router.put('/:id/schedule/:schedule_id', (req, res) => {
+// get specific exercise within a day in a program 
+router.get('/:id/schedule/:schedule_id/exercises/:exercise_id', (req, res) => {
     Program
         .findById(req.params.id)
         .select('schedule')
+        .then(program => res.json(program.schedule[req.params.schedule_id].exercises[req.params.exercise_id]))
+});
+
+// used to edit programName, categories 
+router.put('/:id', (req, res) => {
+    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
+        res.status(400).json({
+            error: 'Request path id and request body id values must match'
+        });
+    }
+
+    const catLength = req.body.categories.length;
+    if (catLength === 0) {
+        const message = 'Enter categories';
+        console.error(message);
+        return res.status(400).send(message);
+    }
+    
+    const edited = {};
+    const editableFields = ['programName', 'categories']
+    editableFields.forEach(field => {
+      if (field in req.body) {
+        edited[field] = req.body[field];
+      }
+    });
+  
+    Program
+      .findByIdAndUpdate(req.params.id, { $set: updated }, { new: true })
+      .then((updatedPost) => res.status(204).end())
+      .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+});
+
+router.put('/:id/schedule/:schedule_id', (req, res) => {
+    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
+        res.status(400).json({
+            error: 'Request path id and request body id values must match'
+        });
+    }
+
+    const reqFields = ['exercises']
+    Program
+        .findById(req.params.id)
+    // .then(program => )
 })
 
 router.delete('/:id', (req, res) => {
@@ -60,7 +105,7 @@ router.delete('/:id', (req, res) => {
             console.error(err);
             res.status(500).json({ error: 'Internal Server Error' });
         })
-})
+});
 
 router.post('/', jsonParser, jwtAuth, (req, res) => {
     // Author should be removed because this should be automatically added 
@@ -74,7 +119,15 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
         }
     }
 
-    // confirms that schedule is has at least length of 1
+    // confirms that categories has at leastlength of 1 
+    const catLength = req.body.categories.length;
+    if (catLength === 0) {
+        const message = 'Enter categories';
+        console.error(message);
+        return res.status(400).send(message);
+    } 
+
+    // confirms that schedule has at least length of 1
     const schedLength = req.body.schedule.length;
     if (schedLength == 0) {
         const message = 'Schedule is empty';
@@ -121,7 +174,7 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
         })
 
 
-})
+});
 
 router.put('/:id', (req, res) => {
     const requiredFields = ['programName', 'categories', 'schedule'];
@@ -183,6 +236,6 @@ router.put('/:id', (req, res) => {
     //${set}
     // .updateOne({_id: programId, {$set: {'schedule.day': req.body.schedule[i].exercise[9]}}})
 
-})
+});
 
 module.exports = router;

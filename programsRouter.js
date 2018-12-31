@@ -56,7 +56,7 @@ router.get('/:id/schedule/:schedule_id/exercises/:exercise_id', (req, res) => {
 });
 
 // used to edit programName, categories 
-router.put('/:id', (req, res) => {
+router.put('/:id', jsonParser, (req, res) => {
     if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
         res.status(400).json({
             error: 'Request path id and request body id values must match'
@@ -69,35 +69,75 @@ router.put('/:id', (req, res) => {
         console.error(message);
         return res.status(400).send(message);
     }
-    
+
     const edited = {};
     const editableFields = ['programName', 'categories']
     editableFields.forEach(field => {
-      if (field in req.body) {
-        edited[field] = req.body[field];
-      }
+        if (field in req.body) {
+            edited[field] = req.body[field];
+        }
     });
-  
+
     Program
-      .findByIdAndUpdate(req.params.id, { $set: updated }, { new: true })
-      .then((updatedPost) => res.status(204).end())
-      .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+        .findByIdAndUpdate(req.params.id, { $set: edited }, { new: true })
+        .then((updatedPost) => res.status(204).end())
+        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
 });
 
-router.put('/:id/schedule/:schedule_id', (req, res) => {
+// used to edit Name of Day in workout 
+router.put('/:id/schedule/:schedule_id', jsonParser, (req, res) => {
     if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
         res.status(400).json({
             error: 'Request path id and request body id values must match'
         });
     }
 
-    const reqFields = ['exercises']
+    const scheduleId = req.params.schedule_id;
+    const attr = `schedule.${scheduleId}.name`;
+    const edited = {};
+    edited[attr] = req.body.name;
+
     Program
-        .findById(req.params.id)
-    // .then(program => )
-})
+        .findByIdAndUpdate(req.params.id, { $set: edited }, { new: true })
+        .then((updatedPost) => res.status(204).end())
+        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+});
+
+// used to EXERCISES (plus sets/reps, etc)
+// Also DELETE exercises or add
+router.put('/:id/schedule/:schedule_id/exercises/:exercise_id', jsonParser, (req, res) => {
+    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
+        res.status(400).json({
+            error: 'Request path id and request body id values must match'
+        });
+    }
+
+    const scheduleId = req.params.schedule_id;
+    const exerciseId = req.params.exercise_id;
+    const edited = {};
+
+    // if Exercise is changed, the exercise Ref needs to change... (?) 
+    const editableFields = ['exercise', 'sets', 'reps', 'distance', 'unitLength', 'time', 'unitTime', 'comments'];
+    editableFields.forEach(field => {
+        let attr = `schedule.${scheduleId}.exercises.${exerciseId}.${field}`;
+        if (field in req.body) {
+            edited[attr] = req.body[field];
+        }
+        else {
+            edited[attr] = null;
+        }
+    });
+
+    Program
+        .findByIdAndUpdate(req.params.id, { $set: edited }, { new: true })
+        .then((updatedPost) => res.status(204).end())
+        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+});
+
+
 
 router.delete('/:id', (req, res) => {
+    // Find program in User's savedPrograms and delete 
     Program
         .findByIdAndRemove(req.params.id)
         .then(() => res.status(204).json({ message: 'success' }))
@@ -125,7 +165,7 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
         const message = 'Enter categories';
         console.error(message);
         return res.status(400).send(message);
-    } 
+    }
 
     // confirms that schedule has at least length of 1
     const schedLength = req.body.schedule.length;
@@ -172,70 +212,6 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
             console.error(err);
             res.status(500).json({ error: 'Internal Server Error' });
         })
-
-
-});
-
-router.put('/:id', (req, res) => {
-    const requiredFields = ['programName', 'categories', 'schedule'];
-    for (let i = 0; i < requiredFields.length; i++) {
-        const field = requiredFields[i];
-        if (!(field in req.body)) {
-            const message = `Missing \`${field}\` in request body`;
-            console.error(message);
-            return res.status(400).send(message);
-        }
-    }
-
-    const schedLength = req.body.schedule.length;
-    if (schedLength == 0) {
-        const message = 'Schedule is empty';
-        console.error(message);
-        return res.status(400).send(message);
-    };
-
-    if (schedLength > 1) {
-        for (let i = 0; i < schedLength; i++) {
-            let day = req.body.schedule[i];
-            if (!day.name) {
-                const message = 'Name has not been added';
-                console.error(message);
-                return res.status(400).send(message);
-            }
-        }
-    }
-
-    for (let i = 0; i < schedLength; i++) {
-        let exerciseList = req.body.schedule[i].exercises;
-        for (let j = 0; j < exerciseList.length; j++) {
-            if (!exerciseList[j].exercise) {
-                const message = 'Exercise Name has not been added';
-                console.error(message);
-                return res.status(400).send(message);
-            }
-        }
-    }
-    const updated = {};
-    const updateableFields = ['programName', 'categories', 'schedule'];
-    updateableFields.forEach(field => {
-        if (field in req.body) {
-            updated[field] = req.body[field];
-        }
-    });
-
-    Program
-        .findByIdAndUpdate(req.params.id, { $set: updated }, { new: true })
-        .then(res.status(204).end())
-        .catch(err => res.status(500).json({ message: 'Something went wrong' }));
-
-
-    // Find Program in collections and Update it
-    // Don't have to include author because you can't change the author 
-    Program
-        .findByIdAndUpdate();
-    //${set}
-    // .updateOne({_id: programId, {$set: {'schedule.day': req.body.schedule[i].exercise[9]}}})
-
 });
 
 module.exports = router;

@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
+
+const jwtAuth = passport.authenticate('jwt', { session: false });
 
 const { Exercise } = require('./models');
 
@@ -21,7 +24,7 @@ router.get('/', (req, res) => {
 })
 
 // When user decides to create a new exercise, name and id provided
-router.post('/', jsonParser, (req, res) => {
+router.post('/', jwtAuth, jsonParser, (req, res) => {
     Exercise
         .create({ name: req.body.name })
         .then(exercise => {

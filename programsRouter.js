@@ -167,6 +167,17 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
         return res.status(400).send(message);
     }
 
+    // confirms categories = legs, back, chest, biceps, triceps, shoulders, full body, cardio
+    const acceptedCat = ['legs', 'back', 'chest', 'biceps', 'triceps', 'shoulders', 'full body', 'cardio'];
+    // loop through input categories 
+    req.body.categories.forEach(category => {
+        if (!acceptedCat.includes(category.toLowerCase())) {
+            const message = 'Invalid category';
+            console.error(message);
+            return res.status(400).send(message);
+        }
+    })
+
     // confirms that schedule has at least length of 1
     const schedLength = req.body.schedule.length;
     if (schedLength == 0) {
@@ -197,6 +208,27 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
                 console.error(message);
                 return res.status(400).send(message);
             }
+
+            const lengthUnits = ['m', 'km', 'mi', 'ft'];
+            if (exerciseList[j].unitLength) {
+                if (!lengthUnits.includes(exerciseList[j].unitLength.toLowerCase())) {
+                    const message = 'Invalid unit of length';
+                    console.error(message);
+                    return res.status(400).send(message);
+                }
+            }
+
+            const timeUnits = ['m', 'hr', 's'];
+            if (exerciseList[j].unitTime) {
+                if (!timeUnits.includes(exerciseList[j].unitTime.toLowerCase())) {
+                    const message = 'Invalid unit of time';
+                    console.error(message);
+                    return res.status(400).send(message);
+                }
+            }
+
+            // validates sets, reps, distance, and time are numbers
+
         }
     }
 

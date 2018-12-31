@@ -53,11 +53,11 @@ const programSchema = mongoose.Schema({
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     categories: ['string'],
     schedule: [
-        {
+        {   _id : false,
             name: { type: 'string', required: false }, // optional in case user is just submitting a single routine
             exercises: 
                 [
-                    {
+                    {   _id : false,
                         exercise: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' },
                         sets: { type: Number, required: false },
                         reps: { type: Number, required: false },

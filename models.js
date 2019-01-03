@@ -19,8 +19,8 @@ const userSchema = mongoose.Schema({
     password: {
         type: 'string',
         required: true
-    }
-    // savedPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }]
+    },
+    savedPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }]
 }, { toJSON: { virtuals: true }, toObject: { virtuals: true }});
 
 // Programs that the user has written 
@@ -36,7 +36,8 @@ userSchema.methods.serialize = function () {
         firstName: this.firstName,
         lastName: this.lastName,
         userName: this.userName,
-        userPrograms: this.userProgramsVirtual
+        userPrograms: this.userProgramsVirtual,
+        savedPrograms: this.savedPrograms
     };
 };
 

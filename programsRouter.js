@@ -116,25 +116,26 @@ router.put('/:id/schedule/:schedule_id/exercises/:exercise_id', jsonParser, (req
     const exerciseId = req.params.exercise_id;
     const edited = {};
 
-    // if Exercise is changed, the exercise Ref needs to change... (?) 
+    const location = `schedule.${scheduleId}.exercises.${exerciseId}`;
+
     const editableFields = ['exercise', 'sets', 'reps', 'distance', 'unitLength', 'time', 'unitTime', 'comments'];
     editableFields.forEach(field => {
         let attr = `schedule.${scheduleId}.exercises.${exerciseId}.${field}`;
         if (field in req.body) {
             edited[attr] = req.body[field];
         }
-        else {
-            edited[attr] = null;
-        }
+        // else {
+        //     edited[attr] = null;
+        // }
     });
+    
+    // coll.update( {'_id':'2', 'users._id':'2'}, {$set:{'users.$':{ "_id":2,"name":"name6",... }}}, false, true)
 
     Program
         .findByIdAndUpdate(req.params.id, { $set: edited }, { new: true })
         .then((updatedPost) => res.status(204).end())
         .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
 });
-
-
 
 router.delete('/:id', (req, res) => {
     // Find program in User's savedPrograms and delete 
@@ -199,7 +200,7 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
         }
     }
 
-    // confirms each exercise has name  
+    // confirms each exercise has name, validates Units, and confirms #s
     for (let i = 0; i < schedLength; i++) {
         let exerciseList = req.body.schedule[i].exercises;
         for (let j = 0; j < exerciseList.length; j++) {

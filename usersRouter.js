@@ -140,4 +140,16 @@ router.post('/register', jsonParser, (req, res) => {
         });
 });
 
+router.patch('/:id', jsonParser, (req, res) => {
+    User
+
+        .update(
+            { _id: req.params.id}, 
+            { $push: { savedPrograms: req.body.value} }
+        )
+        .then((updatedUser) => res.status(204).end())
+        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+})
+
+
 module.exports = router;

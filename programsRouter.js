@@ -95,7 +95,7 @@ router.put('/:id/schedule/:schedule_id', jsonParser, (req, res) => {
     const scheduleId = req.params.schedule_id;
     const attr = `schedule.${scheduleId}.name`;
     const edited = {};
-    edited[attr] = req.body.name;
+    edited[attr] = req.body.name.trim();
 
     Program
         .findByIdAndUpdate(req.params.id, { $set: edited }, { new: true })
@@ -118,9 +118,10 @@ router.put('/:id/schedule/:schedule_id/exercises/:exercise_id', jsonParser, (req
 
     const reqObj = {};
     const editableFields = ['exercise', 'sets', 'reps', 'distance', 'unitLength', 'time', 'unitTime', 'comments'];
+
     editableFields.forEach(field => {
         if (field in req.body) {
-            reqObj[field] = req.body[field];
+            reqObj[field] = req.body[field].trim();
         }
     });
 

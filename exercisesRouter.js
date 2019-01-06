@@ -26,7 +26,7 @@ router.get('/', (req, res) => {
 // When user decides to create a new exercise, name and id provided
 router.post('/', jwtAuth, jsonParser, (req, res) => {
     Exercise
-        .create({ name: req.body.name })
+        .create({ name: req.body.name.trim() })
         .then(exercise => {
             const id = exercise._id.toString();
             const name = exercise.name;

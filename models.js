@@ -73,11 +73,6 @@ const programSchema = mongoose.Schema({
     ]
 });
 
-// programSchema.pre('findByIdAndRemove', function(next) {
-//     this.model('User').remove({ userPrograms: this._id }, next);
-//     this.model('User').remove({ savedPrograms: this._id }, next);
-// });
-
 programSchema.pre('find', function (next) {
     this.populate('author');
     this.populate('schedule.exercises.exercise');

@@ -136,13 +136,28 @@ router.put('/:id/schedule/:schedule_id/exercises/:exercise_id', jsonParser, (req
 
 router.delete('/:id', (req, res) => {
     // Find program in User's savedPrograms and delete 
-    Program
-        .findByIdAndRemove(req.params.id)
-        .then(() => res.status(204).json({ message: 'success' }))
-        .catch(err => {
-            console.error(err);
-            res.status(500).json({ error: 'Internal Server Error' });
-        })
+    User
+        .update(
+            { },
+            { $pull: { savedPrograms: req.params.id } },
+            { multi: true }
+        )
+        .then(
+            Program
+                .findByIdAndRemove(req.params.id)
+                .then(() => res.status(204).json({ message: 'success' }))
+                .catch(err => {
+                    console.error(err);
+                    res.status(500).json({ error: 'Internal Server Error' });
+                })
+        )
+    // Program
+    //     .findByIdAndRemove(req.params.id)
+    //     .then(() => res.status(204).json({ message: 'success' }))
+    //     .catch(err => {
+    //         console.error(err);
+    //         res.status(500).json({ error: 'Internal Server Error' });
+    //     })
 });
 
 router.post('/', jsonParser, jwtAuth, (req, res) => {

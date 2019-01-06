@@ -158,7 +158,8 @@ router.patch('/:id', jsonParser, (req, res) => {
                 )
                 .then(res.status(204).end())
         }
-        // removes savedPrograms
+
+        // IF ALREADY ADDED, DO NOT ADD AGAIN 
         if (req.body.op === 'remove') {
             User
                 .findById(req.params.id)

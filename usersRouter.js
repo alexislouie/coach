@@ -23,7 +23,7 @@ router.get('/', jwtAuth, (req, res) => {
 
 // will have to include users' programs/the program virtual I created before
 // this is now protected by jwtAuth
-router.get('/:id', jwtAuth, (req, res) => {
+router.get('/:id', (req, res) => {
     User
         .findById(req.params.id)
         .populate('userProgramsVirtual')
@@ -140,16 +140,32 @@ router.post('/register', jsonParser, (req, res) => {
         });
 });
 
+// req looks like: { "op": "update", "path": "savedPrograms", "value": "5c2a679abd6ad21ec65e2768" }
 router.patch('/:id', jsonParser, (req, res) => {
-    User
 
-        .update(
-            { _id: req.params.id}, 
-            { $push: { savedPrograms: req.body.value} }
-        )
-        .then((updatedUser) => res.status(204).end())
-        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+    if (req.body.path === 'savedPrograms' ) {
+        if (req.body.op === 'update') {
+            User
+                .update(
+                    { _id: req.params.id}, 
+                    { $push: { savedPrograms: req.body.value} }
+                )
+                .then((updatedUser) => res.status(204).end())
+                .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+        }
+        // removes savedPrograms
+        if (req.body.op === 'delete') {
+            User 
+                .find({_id: req.params.id})
+                .then(user => {
+                    const index = user.savedPrograms.indexOf(req.body.value);
+                    savedPrograms.splice(index, 1)
+                })
+        }
+    }
+
 })
+
 
 
 module.exports = router;

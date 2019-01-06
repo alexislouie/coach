@@ -73,7 +73,7 @@ function tearDownDb() {
     return mongoose.connection.dropDatabase();
 }
 
-describe('Program API resource', function () {
+describe.skip('Program API resource', function () {
     before(function () {
         return runServer(TEST_DATABASE_URL);
     });
@@ -155,7 +155,7 @@ describe('Program API resource', function () {
         });
     })
 
-    describe.only('POST endpoint', function () {
+    describe('POST endpoint', function () {
         it('should add a new program', function () {
             const newProgram = generateProgramData();
             return chai.request(app)

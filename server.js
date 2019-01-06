@@ -46,12 +46,18 @@ app.use('/programs', programsRouter);
 app.use('/exercises', exercisesRouter);
 app.use('/auth', authRouter)
 
+app.patch('/test', require('body-parser').json(), (req, res) => {
+  console.log(req);
+  res.json(req.body)
+})
+
 // const jwtAuth = passport.authenticate('jwt', { session: false });
 
 let server;
 
 function runServer(databaseUrl, port=PORT) {
   return new Promise((resolve, reject) => {
+    // mongoose.set('useFindAndModify', false);
     mongoose.connect(databaseUrl, err => {
       if (err) {
         return reject(err);

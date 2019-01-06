@@ -114,26 +114,22 @@ router.put('/:id/schedule/:schedule_id/exercises/:exercise_id', jsonParser, (req
 
     const scheduleId = req.params.schedule_id;
     const exerciseId = req.params.exercise_id;
-    const edited = {};
-
     const location = `schedule.${scheduleId}.exercises.${exerciseId}`;
 
+    const reqObj = {};
     const editableFields = ['exercise', 'sets', 'reps', 'distance', 'unitLength', 'time', 'unitTime', 'comments'];
     editableFields.forEach(field => {
-        let attr = `schedule.${scheduleId}.exercises.${exerciseId}.${field}`;
         if (field in req.body) {
-            edited[attr] = req.body[field];
+            reqObj[field] = req.body[field];
         }
-        // else {
-        //     edited[attr] = null;
-        // }
     });
-    
-    // coll.update( {'_id':'2', 'users._id':'2'}, {$set:{'users.$':{ "_id":2,"name":"name6",... }}}, false, true)
+
+    const namedObj = {};
+    namedObj[location.toString()] = reqObj;
 
     Program
-        .findByIdAndUpdate(req.params.id, { $set: edited }, { new: true })
-        .then((updatedPost) => res.status(204).end())
+        .findByIdAndUpdate(req.params.id, namedObj)
+        .then(res.status(204).end())
         .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
 });
 

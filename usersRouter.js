@@ -140,11 +140,10 @@ router.post('/register', jsonParser, (req, res) => {
         });
 });
 
-// req looks like: { "op": "update", "path": "savedPrograms", "value": "5c2a679abd6ad21ec65e2768" }
+// req looks like: { "op": "add", "path": "savedPrograms", "value": "5c2a679abd6ad21ec65e2768" }
 router.patch('/:id', jsonParser, (req, res) => {
-
     if (req.body.path === 'savedPrograms' ) {
-        if (req.body.op === 'update') {
+        if (req.body.op === 'add') {
             User
                 .update(
                     { _id: req.params.id}, 
@@ -154,13 +153,16 @@ router.patch('/:id', jsonParser, (req, res) => {
                 .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
         }
         // removes savedPrograms
-        if (req.body.op === 'delete') {
+        if (req.body.op === 'remove') {
             User 
-                .find({_id: req.params.id})
+                .findById(req.params.id)
                 .then(user => {
+                    // console.log(user)
                     const index = user.savedPrograms.indexOf(req.body.value);
-                    savedPrograms.splice(index, 1)
+                    user.savedPrograms.splice(index, 1);
+                    user.save();
                 })
+                .then(res.status(204).end())
         }
     }
 

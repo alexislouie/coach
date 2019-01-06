@@ -72,7 +72,7 @@ router.post('/register', jsonParser, (req, res) => {
 
     const fieldSizes = {
         userName: {
-            min: 3, 
+            min: 3,
             max: 10
         },
         password: {
@@ -81,11 +81,11 @@ router.post('/register', jsonParser, (req, res) => {
         }
     };
     const tooSmallField = Object.keys(fieldSizes).find(
-        field => 
+        field =>
             'min' in fieldSizes[field] && req.body[field].trim().length < fieldSizes[field].min
     );
     const tooLargeField = Object.keys(fieldSizes).find(
-        field => 
+        field =>
             'max' in fieldSizes[field] && req.body[field].trim().length > fieldSizes[field].max
     );
     if (tooSmallField || tooLargeField) {
@@ -93,20 +93,20 @@ router.post('/register', jsonParser, (req, res) => {
             code: 422,
             reason: 'ValidationError',
             message: tooSmallField
-            ? `Must be at least ${fieldSizes[tooSmallField]
-              .min} characters long`
-            : `Must be at most ${fieldSizes[tooLargeField]
-              .max} characters long`,
+                ? `Must be at least ${fieldSizes[tooSmallField]
+                    .min} characters long`
+                : `Must be at most ${fieldSizes[tooLargeField]
+                    .max} characters long`,
             location: tooSmallField || tooLargeField
         });
     }
 
-    let {userName, password, firstName = '', lastName = ''} = req.body;
+    let { userName, password, firstName = '', lastName = '' } = req.body;
     firstName = firstName.trim();
     lastName = lastName.trim();
 
     return User
-        .find({userName: userName})
+        .find({ userName: userName })
         .count()
         .then(count => {
             if (count > 0) {
@@ -116,11 +116,11 @@ router.post('/register', jsonParser, (req, res) => {
                     reason: 'ValidationError',
                     message: 'Username already taken',
                     location: 'username'
-                  });
+                });
             }
             return User.hashPassword(password);
         })
-        .then(hash => { 
+        .then(hash => {
             return User
                 .create({
                     firstName,
@@ -142,19 +142,25 @@ router.post('/register', jsonParser, (req, res) => {
 
 // req looks like: { "op": "add", "path": "savedPrograms", "value": "5c2a679abd6ad21ec65e2768" }
 router.patch('/:id', jsonParser, (req, res) => {
-    if (req.body.path === 'savedPrograms' ) {
+    if (!(req.body.op === 'add') && !(req.body.op === 'remove')) {
+        return res.status(400).json({
+            code: 400,
+            message: 'Invalid Operation'
+        });
+    }
+
+    if (req.body.path === 'savedPrograms') {
         if (req.body.op === 'add') {
             User
                 .update(
-                    { _id: req.params.id}, 
-                    { $push: { savedPrograms: req.body.value} }
+                    { _id: req.params.id },
+                    { $push: { savedPrograms: req.body.value } }
                 )
-                .then((updatedUser) => res.status(204).end())
-                .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+                .then(res.status(204).end())
         }
         // removes savedPrograms
         if (req.body.op === 'remove') {
-            User 
+            User
                 .findById(req.params.id)
                 .then(user => {
                     // console.log(user)
@@ -164,8 +170,13 @@ router.patch('/:id', jsonParser, (req, res) => {
                 })
                 .then(res.status(204).end())
         }
+    } 
+    else {
+        return res.status(500).json({
+            code: 500,
+            message: 'Internal Server Error'
+        });
     }
-
 })
 
 

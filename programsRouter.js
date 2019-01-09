@@ -55,113 +55,7 @@ router.get('/:id/schedule/:schedule_id/exercises/:exercise_id', (req, res) => {
         .then(program => res.json(program.schedule[req.params.schedule_id].exercises[req.params.exercise_id]))
 });
 
-// used to edit programName, categories 
-router.put('/:id', jsonParser, (req, res) => {
-    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
-        res.status(400).json({
-            error: 'Request path id and request body id values must match'
-        });
-    }
-
-    const catLength = req.body.categories.length;
-    if (catLength === 0) {
-        const message = 'Enter categories';
-        console.error(message);
-        return res.status(400).send(message);
-    }
-
-    const edited = {};
-    const editableFields = ['programName', 'categories']
-    editableFields.forEach(field => {
-        if (field in req.body) {
-            edited[field] = req.body[field];
-        }
-    });
-
-    Program
-        .findByIdAndUpdate(req.params.id, { $set: edited }, { new: true })
-        .then((updatedPost) => res.status(204).end())
-        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
-});
-
-// used to edit Name of Day in workout 
-router.put('/:id/schedule/:schedule_id', jsonParser, (req, res) => {
-    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
-        res.status(400).json({
-            error: 'Request path id and request body id values must match'
-        });
-    }
-
-    const scheduleId = req.params.schedule_id;
-    const attr = `schedule.${scheduleId}.name`;
-    const edited = {};
-    edited[attr] = req.body.name.trim();
-
-    Program
-        .findByIdAndUpdate(req.params.id, { $set: edited }, { new: true })
-        .then((updatedPost) => res.status(204).end())
-        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
-});
-
-// used to EXERCISES (plus sets/reps, etc)
-// Also DELETE exercises or add
-router.put('/:id/schedule/:schedule_id/exercises/:exercise_id', jsonParser, (req, res) => {
-    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
-        res.status(400).json({
-            error: 'Request path id and request body id values must match'
-        });
-    }
-
-    const scheduleId = req.params.schedule_id;
-    const exerciseId = req.params.exercise_id;
-    const location = `schedule.${scheduleId}.exercises.${exerciseId}`;
-
-    const reqObj = {};
-    const editableFields = ['exercise', 'sets', 'reps', 'distance', 'unitLength', 'time', 'unitTime', 'comments'];
-
-    editableFields.forEach(field => {
-        if (field in req.body) {
-            reqObj[field] = req.body[field].trim();
-        }
-    });
-
-    const namedObj = {};
-    namedObj[location.toString()] = reqObj;
-
-    Program
-        .findByIdAndUpdate(req.params.id, namedObj)
-        .then(res.status(204).end())
-        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
-});
-
-router.delete('/:id', (req, res) => {
-    // Find program in User's savedPrograms and delete 
-    User
-        .update(
-            { },
-            { $pull: { savedPrograms: req.params.id } },
-            { multi: true }
-        )
-        .then(
-            Program
-                .findByIdAndRemove(req.params.id)
-                .then(() => res.status(204).json({ message: 'success' }))
-                .catch(err => {
-                    console.error(err);
-                    res.status(500).json({ error: 'Internal Server Error' });
-                })
-        )
-    // Program
-    //     .findByIdAndRemove(req.params.id)
-    //     .then(() => res.status(204).json({ message: 'success' }))
-    //     .catch(err => {
-    //         console.error(err);
-    //         res.status(500).json({ error: 'Internal Server Error' });
-    //     })
-});
-
 router.post('/', jsonParser, jwtAuth, (req, res) => {
-    // Author should be removed because this should be automatically added 
     const requiredFields = ['programName', 'categories', 'schedule'];
     for (let i = 0; i < requiredFields.length; i++) {
         const field = requiredFields[i];
@@ -257,6 +151,103 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
             console.error(err);
             res.status(500).json({ error: 'Internal Server Error' });
         })
+});
+
+// used to edit programName, categories 
+router.put('/:id', jsonParser, (req, res) => {
+    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
+        res.status(400).json({
+            error: 'Request path id and request body id values must match'
+        });
+    }
+
+    const catLength = req.body.categories.length;
+    if (catLength === 0) {
+        const message = 'Enter categories';
+        console.error(message);
+        return res.status(400).send(message);
+    }
+
+    const edited = {};
+    const editableFields = ['programName', 'categories']
+    editableFields.forEach(field => {
+        if (field in req.body) {
+            edited[field] = req.body[field];
+        }
+    });
+
+    Program
+        .findByIdAndUpdate(req.params.id, { $set: edited }, { new: true })
+        .then((updatedPost) => res.status(204).end())
+        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+});
+
+// used to edit Name of Day in workout 
+router.put('/:id/schedule/:schedule_id', jsonParser, (req, res) => {
+    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
+        res.status(400).json({
+            error: 'Request path id and request body id values must match'
+        });
+    }
+
+    const scheduleId = req.params.schedule_id;
+    const attr = `schedule.${scheduleId}.name`;
+    const edited = {};
+    edited[attr] = req.body.name.trim();
+
+    Program
+        .findByIdAndUpdate(req.params.id, { $set: edited }, { new: true })
+        .then((updatedPost) => res.status(204).end())
+        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+});
+
+// used to EXERCISES (plus sets/reps, etc)
+// Also DELETE exercises or add
+router.put('/:id/schedule/:schedule_id/exercises/:exercise_id', jsonParser, (req, res) => {
+    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
+        res.status(400).json({
+            error: 'Request path id and request body id values must match'
+        });
+    }
+
+    const scheduleId = req.params.schedule_id;
+    const exerciseId = req.params.exercise_id;
+    const location = `schedule.${scheduleId}.exercises.${exerciseId}`;
+
+    const reqObj = {};
+    const editableFields = ['exercise', 'sets', 'reps', 'distance', 'unitLength', 'time', 'unitTime', 'comments'];
+
+    editableFields.forEach(field => {
+        if (field in req.body) {
+            reqObj[field] = req.body[field].trim();
+        }
+    });
+
+    const namedObj = {};
+    namedObj[location.toString()] = reqObj;
+
+    Program
+        .findByIdAndUpdate(req.params.id, namedObj)
+        .then(res.status(204).end())
+        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+});
+
+router.delete('/:id', (req, res) => {
+    User
+        .update(
+            { },
+            { $pull: { savedPrograms: req.params.id } },
+            { multi: true }
+        )
+        .then(
+            Program
+                .findByIdAndRemove(req.params.id)
+                .then(() => res.status(204).json({ message: 'success' }))
+                .catch(err => {
+                    console.error(err);
+                    res.status(500).json({ error: 'Internal Server Error' });
+                })
+        )
 });
 
 module.exports = router;

@@ -151,25 +151,29 @@ router.patch('/:id', jsonParser, (req, res) => {
 
     if (req.body.path === 'savedPrograms') {
         if (req.body.op === 'add') {
-            User
-                .update(
+            //console.log(req.params, req.body)
+            return User
+                .findOneAndUpdate(
                     { _id: req.params.id },
-                    { $push: { savedPrograms: req.body.value } }
+                    { $push: { savedPrograms: req.body.value } },
+                    { new: true }
                 )
-                .then(res.status(204).end())
+                .then(user => {
+                    //console.log(user);
+                    res.status(201).json(user.serialize())});
         }
 
-        // IF ALREADY ADDED, DO NOT ADD AGAIN 
         if (req.body.op === 'remove') {
             User
                 .findById(req.params.id)
                 .then(user => {
-                    // console.log(user)
                     const index = user.savedPrograms.indexOf(req.body.value);
                     user.savedPrograms.splice(index, 1);
                     user.save();
+
+                    return user;
                 })
-                .then(res.status(204).end())
+                .then(user => res.status(201).json(user.serialize()));
         }
     } 
     else {

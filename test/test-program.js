@@ -34,7 +34,8 @@ function seedAuthor() {
     return User.create({
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
-        userName: faker.internet.userName()
+        userName: faker.internet.userName(),
+        password: faker.lorem.word()
     })
 }
 
@@ -73,7 +74,7 @@ function tearDownDb() {
     return mongoose.connection.dropDatabase();
 }
 
-describe.skip('Program API resource', function () {
+describe.only('Program API resource', function () {
     before(function () {
         return runServer(TEST_DATABASE_URL);
     });
@@ -97,21 +98,24 @@ describe.skip('Program API resource', function () {
     });
 
     describe.skip('GET endpoint', function () {
-        it('should return all existing programs', function () {
-            let res;
-            return chai.request(app)
-                .get('/programs')
-                .then(_res => {
-                    res = _res;
-                    expect(res).to.have.status(200);
-                    expect(res.body.programs).to.have.lengthOf.at.least(1);
+        it('should find all programs accordingly to queried field', function() {
 
-                    return Program.count();
-                })
-                .then(count => {
-                    expect(res.body.programs).to.have.lengthOf(count);
-                })
         })
+        // it('should return all existing programs', function () {
+        //     let res;
+        //     return chai.request(app)
+        //         .get('/programs')
+        //         .then(_res => {
+        //             res = _res;
+        //             expect(res).to.have.status(200);
+        //             expect(res.body.programs).to.have.lengthOf.at.least(1);
+
+        //             return Program.count();
+        //         })
+        //         .then(count => {
+        //             expect(res.body.programs).to.have.lengthOf(count);
+        //         })
+        // })
         it('should return programs with the right fields', function () {
             let resProgram;
             return chai.request(app)

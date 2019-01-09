@@ -7,9 +7,9 @@ const faker = require('faker');
 
 const expect = chai.expect;
 
-const {User, Exercise, Program} = require('../models');
-const {app, runServer, closeServer} = require('../server');
-const {TEST_DATABASE_URL} = require('../config');
+const { User, Exercise, Program } = require('../models');
+const { app, runServer, closeServer } = require('../server');
+const { TEST_DATABASE_URL } = require('../config');
 
 chai.use(chaiHttp);
 
@@ -35,7 +35,8 @@ function seedAuthor() {
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
         userName: faker.internet.userName(),
-        password: faker.lorem.word()
+        password: faker.lorem.word() + '12345678',
+        //savedPrograms: []
     })
 }
 
@@ -69,97 +70,98 @@ function generateProgramData(user, exercise) {
     }
 }
 
-function seedUserData(program) {
+function seedUserData() {
     console.info('seeding user data');
     const seedData = [];
-  
+
     for (let i = 1; i <= 2; i++) {
-      seedData.push(generateUserData(program));
+        seedData.push(generateUserData());
     }
     return User.insertMany(seedData);
-  }
+}
 
-function generateUserData(program) { 
+function generateUserData() {
     return {
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
         userName: faker.internet.userName(),
-        password: faker.lorem.word(),
-        savedPrograms: [mongoose.Types.ObjectId(program._id), mongoose.Types.ObjectId(program._id), mongoose.Types.ObjectId(program._id)]
+        password: faker.lorem.word() + '12345678',
+        //savedPrograms: []
     }
 }
 
 function tearDownDb() {
     console.warn('Deleting Database');
     return mongoose.connection.dropDatabase();
-  }
+}
 
-describe.only('User API resource', function() {
-    before(function() {
+describe('User API resource', function () {
+    before(function () {
         return runServer(TEST_DATABASE_URL);
     });
 
-    beforeEach(function() {
+    beforeEach(function () {
         return seedExercise()
-        .then(exercise => {
-          return seedAuthor()
-            .then(author => ({exercise, author}))
-        })
-            .then(({exercise, author}) => seedProgramData(author, exercise))
-            .then(program => seedUserData(program))
+            .then(exercise => {
+                return seedAuthor()
+                    .then(author => ({ exercise, author }))
+            })
+            .then(({ exercise, author }) => seedProgramData(author, exercise))
+            .then(() => seedUserData())
             .catch(err => console.log(err));
     })
 
-    afterEach(function() {
+    afterEach(function () {
         return tearDownDb();
     });
 
-    after(function() {
+    after(function () {
         return closeServer();
     });
 
-    describe('GET endpoint', function() {
-        it('should return user with the right fields', function() {
+    describe('GET endpoint', function () {
+        it('should return user with the right fields', function () {
             let resUser;
 
             return User
                 .findOne()
                 .then(user => {
                     return chai.request(app)
-                    .get(`/users/${user.id}`)
-                    .then(res => {
-                        expect(res).to.have.status(200);
-                        expect(res).to.be.json;
-                        expect(res.body).to.be.an('object');
-                        expect(res.body).to.include.keys('id', 'firstName', 'lastName', 'userName', 'savedPrograms')
-                        
-                        resUser = res.body;
-                        return User.findById(resUser.id)
-                    })
-                    .then(user => {
-                        expect(resUser.firstName).to.equal(user.firstName);
-                        expect(resUser.lastName).to.equal(user.lastName);
-                        expect(resUser.userName).to.equal(user.userName);
-                    });
+                        .get(`/users/${user.id}`)
+                        .then(res => {
+                            expect(res).to.have.status(200);
+                            expect(res).to.be.json;
+                            expect(res.body).to.be.an('object');
+                            expect(res.body).to.include.keys('id', 'firstName', 'lastName', 'userName', 'savedPrograms')
+
+                            resUser = res.body;
+                            return User.findById(resUser.id)
+                        })
+                        .then(user => {
+                            expect(resUser.firstName).to.equal(user.firstName);
+                            expect(resUser.lastName).to.equal(user.lastName);
+                            expect(resUser.userName).to.equal(user.userName);
+                        });
                 })
                 .catch(err => console.log(err));
-            })    
+        })
     })
 
-    describe('POST endpoint', function(){
-        it('should add a new user', function() {
+    describe('POST endpoint', function () {
+        it('should add a new user', function () {
             const newUser = {
                 firstName: faker.name.firstName(),
                 lastName: faker.name.lastName(),
-                userName: faker.lorem.word(),
-                password: faker.lorem.word(),
+                userName: 'username',
+                password: faker.lorem.word() + '12345678',
             };
-            console.log(newUser)
-            
+
+            console.log('newUser: ', newUser)
+
             return chai.request(app)
                 .post('/users/register')
                 .send(newUser)
-                .then(function(res) {
+                .then(function (res) {
                     expect(res).to.have.status(201);
                     expect(res).to.be.json;
                     expect(res.body).to.be.an('object');
@@ -172,7 +174,7 @@ describe.only('User API resource', function() {
 
                     return User.findById(res.body.id);
                 })
-                .then(function(user) {
+                .then(function (user) {
                     expect(user.firstName).to.equal(newUser.firstName);
                     expect(user.lastName).to.equal(newUser.lastName);
                     expect(user.userName).to.equal(newUser.userName);
@@ -180,4 +182,74 @@ describe.only('User API resource', function() {
                 .catch(err => console.log(err));
         });
     });
-})
+
+    describe('PATCH endpoint', function () {
+        it('should add program to savedProgram field', function () {
+            return Exercise
+                .findOne()
+                .then(exercise => {
+                    let updateData = { op: "add", path: "savedPrograms", value: exercise._id };
+                    return updateData;
+                })
+                .then(updateData => {
+                    return User
+                        .findOne()
+                        .then(user => {
+                            return chai.request(app)
+                                .patch(`/users/${user.id}`)
+                                .send(updateData);
+                        })
+                        .then(res => {
+                            expect(res).to.have.status(201);
+        
+                            return User.findById(res.body.id);
+                        })
+                        .then(user => {
+                            expect(user.savedPrograms[0]).to.deep.equal(updateData.value);
+                        })
+                })                
+            });
+
+        it('should remove program from savedProgram field', function () {
+            return Exercise
+                .findOne()
+                .then(exercise => {
+                    const updateData = { op: "add", path: "savedPrograms", value: exercise._id };
+                    return updateData;
+                })
+                .then(updateData => {
+                    return User
+                        .findOne()
+                        .then(user => {
+                            return chai.request(app)
+                                .patch(`/users/${user.id}`)
+                                .send(updateData);
+                        })
+                        .then(res => {
+                            expect(res).to.have.status(201);
+        
+                            return User.findById(res.body.id);
+                        })
+                        .then(user => {
+                            //console.log('user.savedPrograms[0]: ', user.savedPrograms[0])
+                            expect(user.savedPrograms[0]).to.deep.equal(updateData.value);
+                            return {user, updateData}
+                        })
+                        .then(({user, updateData}) => {
+                            updateData['op'] = 'remove';
+                            return chai.request(app)
+                                .patch(`/users/${user.id}`)
+                                .send(updateData)
+                        })
+                        .then(res => {
+                            expect(res).to.have.status(201);
+
+                            return User.findById(res.body.id)
+                        })
+                        .then(user => {
+                            expect(user.savedPrograms).to.not.include(updateData.value)
+                        })
+                })
+        });
+    });
+});

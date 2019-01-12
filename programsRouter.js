@@ -14,7 +14,7 @@ const { Program, User } = require('./models');
 // })
 
 // when searching
-router.get('/', (req, res) => {
+router.get('/', jwtAuth, (req, res) => {
     const filters = {};
     const queryableFields = ['id', 'programName', 'author', 'categories'];
     queryableFields.forEach(field => {
@@ -39,23 +39,7 @@ router.get('/:id', (req, res) => {
         .then(program => res.json(program.serialize()))
 });
 
-// get specific day in a program
-router.get('/:id/schedule/:schedule_id', (req, res) => {
-    Program
-        .findById(req.params.id)
-        .select('schedule')
-        .then(program => res.json(program.schedule[req.params.schedule_id]))
-});
-
-// get specific exercise within a day in a program 
-router.get('/:id/schedule/:schedule_id/exercises/:exercise_id', (req, res) => {
-    Program
-        .findById(req.params.id)
-        .select('schedule')
-        .then(program => res.json(program.schedule[req.params.schedule_id].exercises[req.params.exercise_id]))
-});
-
-router.post('/', jsonParser, jwtAuth, (req, res) => {
+router.post('/', jwtAuth, jsonParser, (req, res) => {
     const requiredFields = ['programName', 'categories', 'schedule'];
     for (let i = 0; i < requiredFields.length; i++) {
         const field = requiredFields[i];
@@ -146,7 +130,7 @@ router.post('/', jsonParser, jwtAuth, (req, res) => {
             categories: req.body.categories,
             schedule: req.body.schedule
         })
-        .then(program => res.json(program.serialize()))
+        .then(program => res.status(201).json(program.serialize()))
         .catch(err => {
             console.error(err);
             res.status(500).json({ error: 'Internal Server Error' });

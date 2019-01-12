@@ -35,7 +35,7 @@ function seedAuthor() {
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
         userName: faker.internet.userName(),
-        password: faker.lorem.word()
+        password: faker.lorem.word() + '12345678'
     })
 }
 
@@ -81,11 +81,11 @@ describe.only('Program API resource', function () {
 
     beforeEach(function () {
         return seedExercise()
-        .then(exercise => {
-          return seedAuthor()
-            .then(author => ({exercise, author}))
-        })
-            .then(({exercise, author}) => seedProgramData(author, exercise))
+            .then(exercise => {
+                return seedAuthor()
+                    .then(author => ({ exercise, author }))
+            })
+            .then(({ exercise, author }) => seedProgramData(author, exercise))
             .catch(err => console.log(err));
     })
 
@@ -98,7 +98,7 @@ describe.only('Program API resource', function () {
     });
 
     describe.skip('GET endpoint', function () {
-        it('should find all programs accordingly to queried field', function() {
+        it('should find all programs according to queried field', function () {
 
         })
         // it('should return all existing programs', function () {
@@ -159,32 +159,65 @@ describe.only('Program API resource', function () {
         });
     })
 
-    describe('POST endpoint', function () {
+    describe.only('POST endpoint', function () {
         it('should add a new program', function () {
-            const newProgram = generateProgramData();
-            return chai.request(app)
-                .post('/programs')
-                .send(newProgram)
-                .then(function (res) {
-                    expect(res).to.have.status(201);
-                    expect(res).to.be.json;
-                    expect(res.body).to.be.an('object');
-                    expect(res.body).to.include.keys(
-                        'id', 'programName', 'author', 'categories', 'schedule');
-                    expect(res.body.id).to.not.be.null;
-                    expect(res.body.programName).to.equal(newProgram.programName);
-                    expect(res.body.author).to.equal(newProgram.author);
-                    // expect(res.body.categories).to.equal(newProgram.categories);
-                    // expect(res.body.schedule).to.equal(newProgram.schedule);
+            return User
+                .findOne()
+                .then(user => {
+                    const userLogin = {};
+                    userLogin['userName'] = user.userName;
+                    userLogin['password'] = user.password;
 
-                    return Program.findById(res.body.id);
+                    return userLogin;
                 })
-                .then(function (program) {
-                    expect(program.programName).to.equal(newProgram.programName);
-                    expect(program.author).to.equal(newProgram.author);
-                    expect(program.categories).to.equal(newProgram.categories);
-                    expect(program.schedule).to.equal(newProgram.schedule);
-                });
+                .then(userLogin => {
+                    console.log('userLogin: ', userLogin)
+                    return chai.request(app)
+                        .post('/auth/login')
+                        .send(userLogin)
+                        .then((req, res) => {
+                            const token = res.body.authToken;
+                            return { token, req };
+                        })
+                        .then(({token, req}) => {
+                            console.log('token: ', token)
+
+                            return chai.request(app)
+                                .post('/programs')
+                                .set('Authorization', `Bearer ${token}`)
+                                .send(generateProgramData(req.user, exercise))
+                                .then(res => console.log(res))
+
+                        })
+                })
+
+
+
+
+            // const newProgram = generateProgramData();
+            // return chai.request(app)
+            //     .post('/programs')
+            //     .send(newProgram)
+            //     .then(function (res) {
+            //         expect(res).to.have.status(201);
+            //         expect(res).to.be.json;
+            //         expect(res.body).to.be.an('object');
+            //         expect(res.body).to.include.keys(
+            //             'id', 'programName', 'author', 'categories', 'schedule');
+            //         expect(res.body.id).to.not.be.null;
+            //         expect(res.body.programName).to.equal(newProgram.programName);
+            //         expect(res.body.author).to.equal(newProgram.author);
+            //         // expect(res.body.categories).to.equal(newProgram.categories);
+            //         // expect(res.body.schedule).to.equal(newProgram.schedule);
+
+            //         return Program.findById(res.body.id);
+            //     })
+            //     .then(function (program) {
+            //         expect(program.programName).to.equal(newProgram.programName);
+            //         expect(program.author).to.equal(newProgram.author);
+            //         expect(program.categories).to.equal(newProgram.categories);
+            //         expect(program.schedule).to.equal(newProgram.schedule);
+            //     });
         });
     });
 
@@ -200,8 +233,8 @@ describe.only('Program API resource', function () {
                 programName: 'cats cats cats',
                 categories: ['Chest', 'Shoulders'],
                 schedule: []
-              };
-              
+            };
+
             return chai.request(app)
                 .post('/programs')
                 .send(newProgram)

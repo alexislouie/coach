@@ -73,7 +73,7 @@ router.post('/register', jsonParser, (req, res) => {
     const fieldSizes = {
         userName: {
             min: 3,
-            max: 10
+            max: 20
         },
         password: {
             min: 8,

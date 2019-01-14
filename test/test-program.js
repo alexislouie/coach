@@ -38,7 +38,7 @@ function seedAuthor() {
     return User.create({
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
-        userName: 'testuser',
+        userName: 'seededUser',
         password: 'password'
     })
 }
@@ -125,10 +125,7 @@ describe.only('Program API resource', function () {
         return closeServer();
     });
 
-    describe.skip('GET endpoint', function () {
-        // it('should find all programs according to queried field', function () {
-
-        // })
+    describe('GET endpoint', function () {
 
         it('should return all existing programs', function () {
             return seedExercise()
@@ -138,11 +135,6 @@ describe.only('Program API resource', function () {
                         .then(author => ({ exercise, author }))
                 })
                 .then(({ exercise, author }) => seedProgramData(author, exercise))
-                .then(() => {
-                    return Program
-                        .find()
-                        .then(programs => console.log('programs: ', programs))
-                })
                 .then(() => {
                     let res;
                     return chai.request(app)
@@ -207,7 +199,6 @@ describe.only('Program API resource', function () {
                             return exerciseIds
                         })
                         .then(exerciseIds => {
-                            console.log('resProgram: ', resProgram)
                             const resProgramIds = [];
                             resProgram.schedule.forEach(day => {
                                 day.exercises.forEach(exercise => resProgramIds.push(exercise.exercise._id));
@@ -218,7 +209,7 @@ describe.only('Program API resource', function () {
         });
     })
 
-    describe.skip('POST endpoint', function () {
+    describe('POST endpoint', function () {
         it('should add a new program', function () {
 
             return seedExercise()
@@ -258,7 +249,6 @@ describe.only('Program API resource', function () {
                                 .set('Authorization', `Bearer ${token}`)
                                 .send(newProgram)
                                 .then(function (res) {
-                                    console.log('res.body: ', res.body);
                                     expect(res).to.have.status(201);
                                     expect(res).to.be.json;
                                     expect(res.body).to.be.an('object');
@@ -354,7 +344,8 @@ describe.only('Program API resource', function () {
                         })
                 })
                 .catch(err => console.log(err))
-        })
+        });
+
         it('should update program categories', function () {
             return Program
                 .findById(programId)
@@ -379,39 +370,118 @@ describe.only('Program API resource', function () {
                 })
                 .catch(err => console.log(err))
         });
-        it('should update the schedule', function() {
-            
-        })
+
+        it('should update the name of the day in a workout', function() {
+            return Program
+                .findById(programId)
+                .then(doc => {
+                    const update = {
+                        id: doc._id,
+                        name: 'updated name'
+                    }
+
+                    return chai.request(app)
+                        .put(`/programs/${programId}/schedule/0`)
+                        .set('Authorization', `Bearer ${token}`)
+                        .send(update)
+                        .then(res => {
+                            expect(res).to.have.status(204)
+                            return Program.findById(programId)
+                        })
+                        .then((program) => {
+                            expect(program.schedule[0].name).to.equal(update.name);
+                        })
+                })
+                .catch(err => console.log(err))
+        });
+
+        it('should update exercise', function() {
+            return Program
+                .findById(programId)
+                .then(doc => {
+                    const update = {
+                        id: doc._id,
+                        exercise: doc.schedule[0].exercises[0].exercise._id,
+                        reps: 8,
+                        distance: 200,
+                        unitLength: 'm'
+                    }
+
+                    return chai.request(app)
+                        .put(`/programs/${programId}/schedule/0/exercises/0`)
+                        .set('Authorization', `Bearer ${token}`)
+                        .send(update)
+                        .then(res => {
+                            expect(res).to.have.status(204)
+                            return Program.findById(programId)
+                        })
+                        .then((program) => {
+                            expect(program.schedule[0].exercises[0].exercise).to.deep.equal(update.exercise);
+                            expect(program.schedule[0].exercises[0].reps).to.equal(update.reps);
+                            expect(program.schedule[0].exercises[0].distance).to.equal(update.distance);
+                            expect(program.schedule[0].exercises[0].unitLength).to.equal(update.unitLength);
+                        })
+                })
+                .catch(err => console.log(err))
+        });
 
     });
 
-    describe.skip('DELETE endpoint', function () {
-        it('should add a new program', function () {
-            const newProgram = generateProgramData();
-
-            return chai.request(app)
-                .post('/programs')
-                .send(newProgram)
-                .then(function (res) {
-                    expect(res).to.have.status(201);
-                    expect(res).to.be.json;
-                    expect(res.body).to.be.an('object');
-                    expect(res.body).to.include.keys(
-                        'id', 'programName', 'author', 'categories', 'schedule');
-                    expect(res.body.id).to.not.be.null;
-                    expect(res.body.programName).to.equal(newProgram.programName);
-                    expect(res.body.author).to.equal(newProgram.author);
-                    // expect(res.body.categories).to.equal(newProgram.categories);
-                    // expect(res.body.schedule).to.equal(newProgram.schedule);
-
-                    return Program.findById(res.body.id);
+    describe('DELETE endpoint', function () {
+        it('should remove a program', function () {
+            let programId;
+            return seedExercise()
+                .then(() => {
+                    return Exercise
+                        .findOne()
+                        .then(exercise => {
+                            const newProgram = {
+                                programName: faker.lorem.words(),
+                                author: userId,
+                                categories: ['legs', 'back', 'chest'],
+                                schedule: [
+                                    {
+                                        name: faker.lorem.words(),
+                                        exercises: [
+                                            {
+                                                exercise: mongoose.Types.ObjectId(exercise._id),
+                                                sets: faker.random.number(),
+                                                reps: faker.random.number(),
+                                            },
+                                            {
+                                                exercise: mongoose.Types.ObjectId(exercise._id),
+                                                distance: faker.random.number(),
+                                                time: faker.random.number(),
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                            return newProgram;
+                        })
+                        .then(newProgram => {
+                            return chai.request(app)
+                                .post('/programs')
+                                .set('Authorization', `Bearer ${token}`)
+                                .send(newProgram)
+                                .then(res => {
+                                    expect(res).to.have.status(201);
+                                    programId = res.body.id;
+                                })
+                        })
+                        .then(() => {
+                            return chai.request(app)
+                                .del(`/programs/${programId}`)
+                                .set('Authorization', `Bearer ${token}`)
+                                .then(res => {
+                                    expect(res).to.have.status(204);
+                                    return Program.findById(programId)
+                                })
+                                .then(program => {
+                                    expect(program).to.not.exist;
+                                })
+                        })
                 })
-                .then(function (program) {
-                    expect(program.programName).to.equal(newProgram.programName);
-                    expect(program.author).to.equal(newProgram.author);
-                    expect(program.categories).to.equal(newProgram.categories);
-                    expect(program.schedule).to.equal(newProgram.schedule);
-                });
         });
     });
 })

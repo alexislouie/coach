@@ -22,7 +22,7 @@ router.get('/', jwtAuth, (req, res) => {
             filters[field] = req.query[field];
         }
     });
-    
+
     Program
         .find(filters)
         .then(programs => {
@@ -198,6 +198,12 @@ router.put('/:id/schedule/:schedule_id/exercises/:exercise_id', jsonParser, (req
         });
     }
 
+    if (!(req.body.exercise)) {
+        res.status(400).json({
+            error: 'Request must include exercise id'
+        });
+    }
+
     const scheduleId = req.params.schedule_id;
     const exerciseId = req.params.exercise_id;
     const location = `schedule.${scheduleId}.exercises.${exerciseId}`;
@@ -207,7 +213,7 @@ router.put('/:id/schedule/:schedule_id/exercises/:exercise_id', jsonParser, (req
 
     editableFields.forEach(field => {
         if (field in req.body) {
-            reqObj[field] = req.body[field].trim();
+            reqObj[field] = req.body[field];
         }
     });
 
@@ -220,10 +226,10 @@ router.put('/:id/schedule/:schedule_id/exercises/:exercise_id', jsonParser, (req
         .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', jwtAuth, (req, res) => {
     User
         .update(
-            { },
+            {},
             { $pull: { savedPrograms: req.params.id } },
             { multi: true }
         )

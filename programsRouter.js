@@ -22,6 +22,7 @@ router.get('/', jwtAuth, (req, res) => {
             filters[field] = req.query[field];
         }
     });
+    
     Program
         .find(filters)
         .then(programs => {
@@ -138,19 +139,22 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
 });
 
 // used to edit programName, categories 
-router.put('/:id', jsonParser, (req, res) => {
+router.put('/:id', jwtAuth, jsonParser, (req, res) => {
     if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
         res.status(400).json({
             error: 'Request path id and request body id values must match'
         });
     }
 
-    const catLength = req.body.categories.length;
-    if (catLength === 0) {
-        const message = 'Enter categories';
-        console.error(message);
-        return res.status(400).send(message);
+    if (req.body.categories) {
+        const catLength = req.body.categories.length;
+        if (catLength === 0) {
+            const message = 'Enter categories';
+            console.error(message);
+            return res.status(400).send(message);
+        }
     }
+
 
     const edited = {};
     const editableFields = ['programName', 'categories']

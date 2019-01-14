@@ -85,15 +85,14 @@ describe.only('Program API resource', function () {
             })
             .then(res => {
                 expect(res).to.have.status(201);
-                console.log('Registered user for Authentication: ', res.body)
+                // console.log('Registered user for Authentication: ', res.body)
             })
             .then(() => {
                 return User
                     .findOne()
                     .then(user => {
                         userId = user.id;
-                        console.log('userId global set to current user: ', userId)
-                        console.log('typeof user Id: ', typeof userId);
+                        // console.log('userId global set to current user: ', userId)
                         const userCredentials = {
                             username: 'authuser',
                             password: 'password'
@@ -102,13 +101,13 @@ describe.only('Program API resource', function () {
                         return userCredentials;
                     })
                     .then(userCredentials => {
-                        console.log('posting credentials: ', userCredentials)
+                        // console.log('posting credentials: ', userCredentials)
                         return authenticatedUser
                             .post('/auth/login')
                             .send(userCredentials)
                             .then(res => {
                                 token = res.body.authToken;
-                                console.log('token set to: ', token);
+                                //console.log('token set to: ', token);
                                 return token;
                             });
                     })
@@ -227,7 +226,7 @@ describe.only('Program API resource', function () {
                     return Exercise
                         .findOne()
                         .then(exercise => {
-                            console.log('USER ID IN POST ENDPOINT TEST: ', userId)
+                            // console.log('USER ID IN POST TEST: ', userId)
                             const newProgram = {
                                 programName: faker.lorem.words(),
                                 author: userId,
@@ -287,59 +286,103 @@ describe.only('Program API resource', function () {
     });
 
     describe('PUT endpoint', function () {
-        // strategy:
-        //  1. Get an existing post from db
-        //  2. Make a PUT request to update that post
-        //  4. Prove post in db is correctly updated
-        it('should update a program name', function () {
-            const updateProgram = {
-                programName: 'new program name'
-            };
+
+        let programId;
+        this.beforeEach(function () {
             return seedExercise()
-                .then(exercise => {
-                    console.log('seeding exercise')
-                    return seedAuthor()
-                        .then(author => ({ exercise, author }))
-                })
-                .then(({ exercise, author }) => seedProgramData(author, exercise))
                 .then(() => {
-                    return Program
-                        .find()
-                        .then(programs => console.log('programs: ', programs))
+                    return Exercise
+                        .findOne()
+                        .then(exercise => {
+                            const newProgram = {
+                                programName: faker.lorem.words(),
+                                author: userId,
+                                categories: ['legs', 'back', 'chest'],
+                                schedule: [
+                                    {
+                                        name: faker.lorem.words(),
+                                        exercises: [
+                                            {
+                                                exercise: mongoose.Types.ObjectId(exercise._id),
+                                                sets: faker.random.number(),
+                                                reps: faker.random.number(),
+                                            },
+                                            {
+                                                exercise: mongoose.Types.ObjectId(exercise._id),
+                                                distance: faker.random.number(),
+                                                time: faker.random.number(),
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                            return newProgram
+                        })
+                        .then(newProgram => {
+                            return chai.request(app)
+                                .post('/programs')
+                                .set('Authorization', `Bearer ${token}`)
+                                .send(newProgram)
+                                .then(res => {
+                                    expect(res).to.have.status(201)
+                                    programId = res.body.id
+                                })
+                        })
                 })
-                .then(() => {
-                    return chai.request(app)
-                    .post('/programs')
-                    .send(newProgram)
-                    .then(() => {
-                        return chai.request(app)
-                            .put('/:id')
-                    })
-
-
-                    .then(function (res) {
-                        expect(res).to.have.status(201);
-                        expect(res).to.be.json;
-                        expect(res.body).to.be.an('object');
-                        expect(res.body).to.include.keys(
-                            'id', 'programName', 'author', 'categories', 'schedule');
-                        expect(res.body.id).to.not.be.null;
-                        expect(res.body.programName).to.equal(newProgram.programName);
-                        expect(res.body.author).to.equal(newProgram.author);
-                        // expect(res.body.categories).to.equal(newProgram.categories);
-                        // expect(res.body.schedule).to.equal(newProgram.schedule);
-    
-                        return Program.findById(res.body.id);
-                    })
-                    .then(function (program) {
-                        expect(program.programName).to.equal(newProgram.programName);
-                        expect(program.author).to.equal(newProgram.author);
-                        expect(program.categories).to.equal(newProgram.categories);
-                        expect(program.schedule).to.equal(newProgram.schedule);
-                    });
-                })
-            
         });
+
+        it('should update program name', function () {
+            return Program
+                .findById(programId)
+                .then(doc => {
+                    const update = {
+                        id: doc._id,
+                        programName: 'new program name'
+                    }
+
+                    return chai.request(app)
+                        .put(`/programs/${programId}`)
+                        .set('Authorization', `Bearer ${token}`)
+                        .send(update)
+                        .then(res => {
+                            expect(res).to.have.status(204)
+                            return Program.findById(programId)
+                        })
+                        .then((program) => {
+                            expect(program.programName).to.equal(update.programName);
+
+                        })
+                })
+                .catch(err => console.log(err))
+        })
+        it('should update program categories', function () {
+            return Program
+                .findById(programId)
+                .then(doc => {
+                    const update = {
+                        id: doc._id,
+                        categories: ['full body', 'cardio']
+                    }
+
+                    return chai.request(app)
+                        .put(`/programs/${programId}`)
+                        .set('Authorization', `Bearer ${token}`)
+                        .send(update)
+                        .then(res => {
+                            expect(res).to.have.status(204)
+                            return Program.findById(programId)
+                        })
+                        .then((program) => {
+                            expect(program.categories).to.deep.equal(update.categories);
+
+                        })
+                })
+                .catch(err => console.log(err))
+        });
+        it('should update the schedule', function() {
+            
+        })
+
     });
 
     describe.skip('DELETE endpoint', function () {

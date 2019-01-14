@@ -30,7 +30,7 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
         .then(exercise => {
             const id = exercise._id.toString();
             const name = exercise.name;
-            res.status(200).json({ name: name, id: id})
+            res.status(201).json({ name: name, id: id})
         })
         .catch(err => {
             console.error(err);

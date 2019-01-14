@@ -152,7 +152,7 @@ describe('User API resource', function () {
             const newUser = {
                 firstName: faker.name.firstName(),
                 lastName: faker.name.lastName(),
-                userName: 'username',
+                userName: faker.internet.userName(),
                 password: faker.lorem.word() + '12345678',
             };
 
@@ -162,17 +162,23 @@ describe('User API resource', function () {
                 .post('/users/register')
                 .send(newUser)
                 .then(function (res) {
-                    expect(res).to.have.status(201);
-                    expect(res).to.be.json;
-                    expect(res.body).to.be.an('object');
-                    expect(res.body).to.include.keys(
-                        'id', 'firstName', 'lastName', 'userName', 'savedPrograms');
-                    expect(res.body.id).to.not.be.null;
-                    expect(res.body.firstName).to.equal(newUser.firstName);
-                    expect(res.body.lastName).to.equal(newUser.lastName);
-                    expect(res.body.userName).to.equal(newUser.userName);
+                    if (newUser.userName.length > 15) {
+                        expect(res).to.have.status(422)
+                    }
+                    else {
+                        expect(res).to.have.status(201);
+                        expect(res).to.be.json;
+                        expect(res.body).to.be.an('object');
+                        expect(res.body).to.include.keys(
+                            'id', 'firstName', 'lastName', 'userName', 'savedPrograms');
+                        expect(res.body.id).to.not.be.null;
+                        expect(res.body.firstName).to.equal(newUser.firstName);
+                        expect(res.body.lastName).to.equal(newUser.lastName);
+                        expect(res.body.userName).to.equal(newUser.userName);
 
-                    return User.findById(res.body.id);
+                        return User.findById(res.body.id);
+                    }
+
                 })
                 .then(function (user) {
                     expect(user.firstName).to.equal(newUser.firstName);
@@ -201,14 +207,14 @@ describe('User API resource', function () {
                         })
                         .then(res => {
                             expect(res).to.have.status(201);
-        
+
                             return User.findById(res.body.id);
                         })
                         .then(user => {
                             expect(user.savedPrograms[0]).to.deep.equal(updateData.value);
                         })
-                })                
-            });
+                })
+        });
 
         it('should remove program from savedProgram field', function () {
             return Exercise
@@ -227,15 +233,15 @@ describe('User API resource', function () {
                         })
                         .then(res => {
                             expect(res).to.have.status(201);
-        
+
                             return User.findById(res.body.id);
                         })
                         .then(user => {
                             //console.log('user.savedPrograms[0]: ', user.savedPrograms[0])
                             expect(user.savedPrograms[0]).to.deep.equal(updateData.value);
-                            return {user, updateData}
+                            return { user, updateData }
                         })
-                        .then(({user, updateData}) => {
+                        .then(({ user, updateData }) => {
                             updateData['op'] = 'remove';
                             return chai.request(app)
                                 .patch(`/users/${user.id}`)

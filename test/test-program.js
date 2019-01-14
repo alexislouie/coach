@@ -68,7 +68,7 @@ function tearDownDb() {
     return mongoose.connection.dropDatabase();
 }
 
-describe.only('Program API resource', function () {
+describe('Program API resource', function () {
     before(function () {
         return runServer(TEST_DATABASE_URL);
     });

@@ -11,21 +11,22 @@ const jsonParser = bodyParser.json();
 const jwtAuth = passport.authenticate('jwt', { session: false });
 
 
-// router.get('/', (req, res) => {
-//     User
-//         .find()
-//         .then(users => res.json({ users: users.map(user => user.serialize()) }))
-//         .catch(err => {
-//             console.error(err);
-//             res.status(500).json({ error: 'Internal Server Error' });
-//         });
-// })
+router.get('/', jwtAuth, (req, res) => {
+    User
+        .find()
+        .then(users => res.json(users.map(user => user.serialize())))
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ error: 'Internal Server Error' });
+        });
+})
 
 // will have to include users' programs/the program virtual I created before
 // this is now protected by jwtAuth
 router.get('/:id', jwtAuth, (req, res) => {
     User
         .findById(req.params.id)
+        .populate('userProgramsVirtual')
         .then(user => res.json(user.serialize()))
         .catch(err => {
             console.error(err);
@@ -71,8 +72,8 @@ router.post('/register', jsonParser, (req, res) => {
 
     const fieldSizes = {
         userName: {
-            min: 3, 
-            max: 10
+            min: 3,
+            max: 20
         },
         password: {
             min: 8,
@@ -80,11 +81,11 @@ router.post('/register', jsonParser, (req, res) => {
         }
     };
     const tooSmallField = Object.keys(fieldSizes).find(
-        field => 
+        field =>
             'min' in fieldSizes[field] && req.body[field].trim().length < fieldSizes[field].min
     );
     const tooLargeField = Object.keys(fieldSizes).find(
-        field => 
+        field =>
             'max' in fieldSizes[field] && req.body[field].trim().length > fieldSizes[field].max
     );
     if (tooSmallField || tooLargeField) {
@@ -92,20 +93,20 @@ router.post('/register', jsonParser, (req, res) => {
             code: 422,
             reason: 'ValidationError',
             message: tooSmallField
-            ? `Must be at least ${fieldSizes[tooSmallField]
-              .min} characters long`
-            : `Must be at most ${fieldSizes[tooLargeField]
-              .max} characters long`,
+                ? `Must be at least ${fieldSizes[tooSmallField]
+                    .min} characters long`
+                : `Must be at most ${fieldSizes[tooLargeField]
+                    .max} characters long`,
             location: tooSmallField || tooLargeField
         });
     }
 
-    let {userName, password, firstName = '', lastName = ''} = req.body;
+    let { userName, password, firstName = '', lastName = '' } = req.body;
     firstName = firstName.trim();
     lastName = lastName.trim();
 
     return User
-        .find({userName: userName})
+        .find({ userName: userName })
         .count()
         .then(count => {
             if (count > 0) {
@@ -115,11 +116,11 @@ router.post('/register', jsonParser, (req, res) => {
                     reason: 'ValidationError',
                     message: 'Username already taken',
                     location: 'username'
-                  });
+                });
             }
             return User.hashPassword(password);
         })
-        .then(hash => { 
+        .then(hash => {
             return User
                 .create({
                     firstName,
@@ -138,5 +139,51 @@ router.post('/register', jsonParser, (req, res) => {
             res.status(500).json({ code: 500, message: 'Internal Server Error' });
         });
 });
+
+// req looks like: { "op": "add", "path": "savedPrograms", "value": "5c2a679abd6ad21ec65e2768" }
+router.patch('/:id', jwtAuth, jsonParser, (req, res) => {
+    if (!(req.body.op === 'add') && !(req.body.op === 'remove')) {
+        return res.status(400).json({
+            code: 400,
+            message: 'Invalid Operation'
+        });
+    }
+
+    if (req.body.path === 'savedPrograms') {
+        if (req.body.op === 'add') {
+            //console.log(req.params, req.body)
+            return User
+                .findOneAndUpdate(
+                    { _id: req.params.id },
+                    { $push: { savedPrograms: req.body.value } },
+                    { new: true }
+                )
+                .then(user => {
+                    //console.log(user);
+                    res.status(201).json(user.serialize())});
+        }
+
+        if (req.body.op === 'remove') {
+            User
+                .findById(req.params.id)
+                .then(user => {
+                    const index = user.savedPrograms.indexOf(req.body.value);
+                    user.savedPrograms.splice(index, 1);
+                    user.save();
+
+                    return user;
+                })
+                .then(user => res.status(201).json(user.serialize()));
+        }
+    } 
+    else {
+        return res.status(500).json({
+            code: 500,
+            message: 'Internal Server Error'
+        });
+    }
+})
+
+
 
 module.exports = router;

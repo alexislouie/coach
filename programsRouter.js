@@ -1,49 +1,47 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
 
-const { Program } = require('./models');
+const jwtAuth = passport.authenticate('jwt', { session: false });
 
-router.get('/', (req, res) => {
+const { Program, User } = require('./models');
+
+// user GET request to get user's programs
+// router.get('/', (req, res) => {
+
+// })
+
+// when searching
+router.get('/', jwtAuth, (req, res) => {
     const filters = {};
-    const queryableFields = ['programName', 'author', 'categories',];
+    const queryableFields = ['id', 'programName', 'author', 'categories'];
     queryableFields.forEach(field => {
         if (req.query[field]) {
             filters[field] = req.query[field];
         }
     });
+
     Program
         .find(filters)
         .then(programs => {
-            res.json({
-                programs: programs.map(program => program.serialize())
-            })
+            res.json(programs.map(program => program.serialize()))
         })
         .catch(err => {
             console.error(err);
             res.status(500).json({ error: 'Internal Server Error' });
         });
-})
+});
 
-router.delete('/:id', (req, res) => {
+router.get('/:id', (req, res) => {
     Program
-        .findByIdAndRemove(req.params.id)
-        .then(() => res.status(204).json({ message: 'success' }))
-        .catch(err => {
-            console.error(err);
-            res.status(500).json({ error: 'Internal Server Error' });
-        })
-})
+        .findById(req.params.id)
+        .then(program => res.json(program.serialize()))
+});
 
-router.put('/:id', (req, res) => {
-    // confirm schedule has length and has exercises (i.e schedule.exercises)
-    // if exercise is being updated
-    // find exercise (by name?) and update that entry
-})
-
-router.post('/', jsonParser, (req, res) => {
-    const requiredFields = ['programName', 'author', 'categories', 'schedule'];
+router.post('/', jwtAuth, jsonParser, (req, res) => {
+    const requiredFields = ['programName', 'categories', 'schedule'];
     for (let i = 0; i < requiredFields.length; i++) {
         const field = requiredFields[i];
         if (!(field in req.body)) {
@@ -53,7 +51,26 @@ router.post('/', jsonParser, (req, res) => {
         }
     }
 
-    // confirms that schedule is has at least length of 1
+    // confirms that categories has at leastlength of 1 
+    const catLength = req.body.categories.length;
+    if (catLength === 0) {
+        const message = 'Enter categories';
+        console.error(message);
+        return res.status(400).send(message);
+    }
+
+    // confirms categories = legs, back, chest, biceps, triceps, shoulders, full body, cardio
+    const acceptedCat = ['legs', 'back', 'chest', 'biceps', 'triceps', 'shoulders', 'full body', 'cardio'];
+    // loop through input categories 
+    req.body.categories.forEach(category => {
+        if (!acceptedCat.includes(category.toLowerCase())) {
+            const message = 'Invalid category';
+            console.error(message);
+            return res.status(400).send(message);
+        }
+    })
+
+    // confirms that schedule has at least length of 1
     const schedLength = req.body.schedule.length;
     if (schedLength == 0) {
         const message = 'Schedule is empty';
@@ -74,7 +91,7 @@ router.post('/', jsonParser, (req, res) => {
         }
     }
 
-    // confirms each exercise has name  
+    // confirms each exercise has name, validates Units, and confirms #s
     for (let i = 0; i < schedLength; i++) {
         let exerciseList = req.body.schedule[i].exercises;
         for (let j = 0; j < exerciseList.length; j++) {
@@ -83,22 +100,148 @@ router.post('/', jsonParser, (req, res) => {
                 console.error(message);
                 return res.status(400).send(message);
             }
+
+            const lengthUnits = ['m', 'km', 'mi', 'ft'];
+            if (exerciseList[j].unitLength) {
+                if (!lengthUnits.includes(exerciseList[j].unitLength.toLowerCase())) {
+                    const message = 'Invalid unit of length';
+                    console.error(message);
+                    return res.status(400).send(message);
+                }
+            }
+
+            const timeUnits = ['m', 'hr', 's'];
+            if (exerciseList[j].unitTime) {
+                if (!timeUnits.includes(exerciseList[j].unitTime.toLowerCase())) {
+                    const message = 'Invalid unit of time';
+                    console.error(message);
+                    return res.status(400).send(message);
+                }
+            }
+
+            // validates sets, reps, distance, and time are numbers
+
         }
     }
 
-    // Author will come from Authentication 
-    // req.body will have objectIDs already included
-    User
-      .findOne()
-      .then(user => {
-        Program
-          .create({
+    Program
+        .create({
             programName: req.body.programName,
-            author: user._id,
+            author: req.user.id,
             categories: req.body.categories,
             schedule: req.body.schedule
-          });
-      });
-})
+        })
+        .then(program => res.status(201).json(program.serialize()))
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ error: 'Internal Server Error' });
+        })
+});
+
+// used to edit programName, categories 
+router.put('/:id', jwtAuth, jsonParser, (req, res) => {
+    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
+        res.status(400).json({
+            error: 'Request path id and request body id values must match'
+        });
+    }
+
+    if (req.body.categories) {
+        const catLength = req.body.categories.length;
+        if (catLength === 0) {
+            const message = 'Enter categories';
+            console.error(message);
+            return res.status(400).send(message);
+        }
+    }
+
+
+    const edited = {};
+    const editableFields = ['programName', 'categories']
+    editableFields.forEach(field => {
+        if (field in req.body) {
+            edited[field] = req.body[field];
+        }
+    });
+
+    Program
+        .findByIdAndUpdate(req.params.id, { $set: edited }, { new: true })
+        .then((updatedPost) => res.status(204).end())
+        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+});
+
+// used to edit Name of Day in workout 
+router.put('/:id/schedule/:schedule_id', jsonParser, (req, res) => {
+    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
+        res.status(400).json({
+            error: 'Request path id and request body id values must match'
+        });
+    }
+
+    const scheduleId = req.params.schedule_id;
+    const attr = `schedule.${scheduleId}.name`;
+    const edited = {};
+    edited[attr] = req.body.name.trim();
+
+    Program
+        .findByIdAndUpdate(req.params.id, { $set: edited }, { new: true })
+        .then((updatedPost) => res.status(204).end())
+        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+});
+
+// used to EXERCISES (plus sets/reps, etc)
+// Also DELETE exercises or add
+router.put('/:id/schedule/:schedule_id/exercises/:exercise_id', jsonParser, (req, res) => {
+    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
+        res.status(400).json({
+            error: 'Request path id and request body id values must match'
+        });
+    }
+
+    if (!(req.body.exercise)) {
+        res.status(400).json({
+            error: 'Request must include exercise id'
+        });
+    }
+
+    const scheduleId = req.params.schedule_id;
+    const exerciseId = req.params.exercise_id;
+    const location = `schedule.${scheduleId}.exercises.${exerciseId}`;
+
+    const reqObj = {};
+    const editableFields = ['exercise', 'sets', 'reps', 'distance', 'unitLength', 'time', 'unitTime', 'comments'];
+
+    editableFields.forEach(field => {
+        if (field in req.body) {
+            reqObj[field] = req.body[field];
+        }
+    });
+
+    const namedObj = {};
+    namedObj[location.toString()] = reqObj;
+
+    Program
+        .findByIdAndUpdate(req.params.id, namedObj)
+        .then(res.status(204).end())
+        .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+});
+
+router.delete('/:id', jwtAuth, (req, res) => {
+    User
+        .update(
+            {},
+            { $pull: { savedPrograms: req.params.id } },
+            { multi: true }
+        )
+        .then(
+            Program
+                .findByIdAndRemove(req.params.id)
+                .then(() => res.status(204).json({ message: 'success' }))
+                .catch(err => {
+                    console.error(err);
+                    res.status(500).json({ error: 'Internal Server Error' });
+                })
+        )
+});
 
 module.exports = router;

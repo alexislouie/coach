@@ -19,25 +19,25 @@ const userSchema = mongoose.Schema({
     password: {
         type: 'string',
         required: true
-    }
-    // userPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }],
-    // savedPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }]
-});
+    },
+    savedPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }]
+}, { toJSON: { virtuals: true }, toObject: { virtuals: true }});
 
 // Programs that the user has written 
-userSchema.virtual('userPrograms', {
+userSchema.virtual('userProgramsVirtual', {
     ref: 'Program',
     localField: '_id',
     foreignField: 'author'
   });
 
-// leaves out PW
 userSchema.methods.serialize = function () {
     return {
         id: this._id,
         firstName: this.firstName,
         lastName: this.lastName,
-        userName: this.userName
+        userName: this.userName,
+        userPrograms: this.userProgramsVirtual,
+        savedPrograms: this.savedPrograms
     };
 };
 
@@ -54,11 +54,11 @@ const programSchema = mongoose.Schema({
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     categories: ['string'],
     schedule: [
-        {
+        {   _id : false,
             name: { type: 'string', required: false }, // optional in case user is just submitting a single routine
             exercises: 
                 [
-                    {
+                    {   _id : false,
                         exercise: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' },
                         sets: { type: Number, required: false },
                         reps: { type: Number, required: false },
@@ -72,11 +72,6 @@ const programSchema = mongoose.Schema({
         }
     ]
 });
-
-// programSchema.pre('findByIdAndRemove', function(next) {
-//     this.model('User').remove({ userPrograms: this._id }, next);
-//     this.model('User').remove({ savedPrograms: this._id }, next);
-// });
 
 programSchema.pre('find', function (next) {
     this.populate('author');

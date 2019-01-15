@@ -1,3 +1,11 @@
+fetch('/users/register')
+
+function signUp() {
+    $('nav').on('click', )
+}
+
+
+
 var MOCK_PROFILE_DATA = {
     id: 111111,
     firstName: "Alexis",

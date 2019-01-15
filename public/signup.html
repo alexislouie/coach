@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html class="no-js">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Coaching App</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway" rel="stylesheet">
+    <link rel="stylesheet" href="main.css">
+</head>
+
+
+<header>
+    <nav role="navigation">
+        <span>Hey Coach!</span>
+        <ul>
+            <li><a href="/">Sign Up</a></li>
+            <li><a href="/">Log In</a></li>
+        </ul>
+    </nav>
+</header>
+
+<body>
+    <main>
+
+        <div class="forms">
+
+            <form class="signup-form" action="/signup/" method="post">
+                <fieldset>
+                    <legend>Sign up</legend>
+                    <label for="first-name">First Name</label>
+                    <input type="text" id="firstName" required />
+
+                    <label for="first-name">Last Name</label>
+                    <input type="text" id="lastName" required />
+
+                    <label for="username">Username</label>
+                    <input type="text" id="userName" required />
+
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required />
+
+                    <button type="submit">Sign Up</button>
+                </fieldset>
+            </form>
+            <div class="login">
+                <span>
+                    Already have an account?
+                    <a href="/login">Log In</a>
+                </span>
+            </div>
+
+
+            <form class="login-form" action="/login/" method="post">
+                <fieldset>
+                    <legend>Login up</legend>
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" required />
+
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required />
+
+                    <button type="submit">Log In</button>
+                </fieldset>
+            </form>
+            <div class="signup">
+                <span>
+                    Are you new here?
+                    <a href="/signup">Sign Up</a>
+                </span>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous">
+
+        </script>
+</body>
+
+</html>

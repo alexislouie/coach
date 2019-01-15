@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
+
+const jwtAuth = passport.authenticate('jwt', { session: false });
 
 const { Exercise } = require('./models');
 
@@ -21,13 +24,13 @@ router.get('/', (req, res) => {
 })
 
 // When user decides to create a new exercise, name and id provided
-router.post('/', jsonParser, (req, res) => {
+router.post('/', jwtAuth, jsonParser, (req, res) => {
     Exercise
-        .create({ name: req.body.name })
+        .create({ name: req.body.name.trim() })
         .then(exercise => {
             const id = exercise._id.toString();
             const name = exercise.name;
-            res.status(200).json({ name: name, id: id})
+            res.status(201).json({ name: name, id: id})
         })
         .catch(err => {
             console.error(err);

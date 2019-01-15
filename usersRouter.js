@@ -23,7 +23,7 @@ router.get('/', jwtAuth, (req, res) => {
 
 // will have to include users' programs/the program virtual I created before
 // this is now protected by jwtAuth
-router.get('/:id', (req, res) => {
+router.get('/:id', jwtAuth, (req, res) => {
     User
         .findById(req.params.id)
         .populate('userProgramsVirtual')
@@ -141,7 +141,7 @@ router.post('/register', jsonParser, (req, res) => {
 });
 
 // req looks like: { "op": "add", "path": "savedPrograms", "value": "5c2a679abd6ad21ec65e2768" }
-router.patch('/:id', jsonParser, (req, res) => {
+router.patch('/:id', jwtAuth, jsonParser, (req, res) => {
     if (!(req.body.op === 'add') && !(req.body.op === 'remove')) {
         return res.status(400).json({
             code: 400,

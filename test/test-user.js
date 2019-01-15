@@ -13,6 +13,9 @@ const { TEST_DATABASE_URL } = require('../config');
 
 chai.use(chaiHttp);
 
+const authenticatedUser = chai.request.agent(app);
+let token;
+
 function seedProgramData(user, exercise) {
     console.info('seeding program data');
     const seedData = [];
@@ -95,20 +98,50 @@ function tearDownDb() {
     return mongoose.connection.dropDatabase();
 }
 
-describe('User API resource', function () {
+describe.only('User API resource', function () {
     before(function () {
         return runServer(TEST_DATABASE_URL);
     });
 
     beforeEach(function () {
-        return seedExercise()
-            .then(exercise => {
-                return seedAuthor()
-                    .then(author => ({ exercise, author }))
+        return chai.request(app)
+            .post('/users/register')
+            .send({
+                firstName: 'test',
+                lastName: 'user',
+                userName: 'authuser',
+                password: 'password'
             })
-            .then(({ exercise, author }) => seedProgramData(author, exercise))
-            .then(() => seedUserData())
-            .catch(err => console.log(err));
+            .then(res => {
+                expect(res).to.have.status(201);
+
+                const userCredentials = {
+                    username: 'authuser',
+                    password: 'password'
+                };
+
+                return userCredentials;
+            })
+            .then(userCredentials => {
+                return authenticatedUser
+                    .post('/auth/login')
+                    .send(userCredentials)
+                    .then(res => {
+                        token = res.body.authToken;
+                        return token;
+                    });
+            })
+            .catch(err => console.log(err))
+            .then(() => {
+                return seedExercise()
+                    .then(exercise => {
+                        return seedAuthor()
+                            .then(author => ({ exercise, author }))
+                    })
+                    .then(({ exercise, author }) => seedProgramData(author, exercise))
+                    .then(() => seedUserData())
+                    .catch(err => console.log(err));
+            })
     })
 
     afterEach(function () {
@@ -120,7 +153,7 @@ describe('User API resource', function () {
     });
 
     describe('GET endpoint', function () {
-        it('should return user with the right fields', function () {
+        it('should return user by ID with the right fields', function () {
             let resUser;
 
             return User
@@ -128,6 +161,7 @@ describe('User API resource', function () {
                 .then(user => {
                     return chai.request(app)
                         .get(`/users/${user.id}`)
+                        .set('Authorization', `Bearer ${token}`)
                         .then(res => {
                             expect(res).to.have.status(200);
                             expect(res).to.be.json;
@@ -144,7 +178,7 @@ describe('User API resource', function () {
                         });
                 })
                 .catch(err => console.log(err));
-        })
+        });
     })
 
     describe('POST endpoint', function () {
@@ -155,8 +189,6 @@ describe('User API resource', function () {
                 userName: faker.internet.userName(),
                 password: faker.lorem.word() + '12345678',
             };
-
-            console.log('newUser: ', newUser)
 
             return chai.request(app)
                 .post('/users/register')
@@ -203,6 +235,7 @@ describe('User API resource', function () {
                         .then(user => {
                             return chai.request(app)
                                 .patch(`/users/${user.id}`)
+                                .set('Authorization', `Bearer ${token}`)
                                 .send(updateData);
                         })
                         .then(res => {
@@ -229,6 +262,7 @@ describe('User API resource', function () {
                         .then(user => {
                             return chai.request(app)
                                 .patch(`/users/${user.id}`)
+                                .set('Authorization', `Bearer ${token}`)
                                 .send(updateData);
                         })
                         .then(res => {
@@ -237,7 +271,6 @@ describe('User API resource', function () {
                             return User.findById(res.body.id);
                         })
                         .then(user => {
-                            //console.log('user.savedPrograms[0]: ', user.savedPrograms[0])
                             expect(user.savedPrograms[0]).to.deep.equal(updateData.value);
                             return { user, updateData }
                         })
@@ -245,6 +278,7 @@ describe('User API resource', function () {
                             updateData['op'] = 'remove';
                             return chai.request(app)
                                 .patch(`/users/${user.id}`)
+                                .set('Authorization', `Bearer ${token}`)
                                 .send(updateData)
                         })
                         .then(res => {
@@ -253,7 +287,7 @@ describe('User API resource', function () {
                             return User.findById(res.body.id)
                         })
                         .then(user => {
-                            expect(user.savedPrograms).to.not.include(updateData.value)
+                            expect(user.savedPrograms).to.not.include(updateData.value.toString())
                         })
                 })
         });

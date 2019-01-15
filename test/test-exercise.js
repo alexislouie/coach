@@ -71,9 +71,6 @@ describe.only('User API resource', function () {
                     });
             })
             .catch(err => console.log(err))
-
-            .catch(err => console.log(err));
-
     });
 
     afterEach(function () {

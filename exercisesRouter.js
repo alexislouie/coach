@@ -13,9 +13,7 @@ router.get('/', (req, res) => {
     Exercise
         .find()
         .then(exercises => {
-            res.json({
-                exercises: exercises.map(exercise => exercise.serialize())
-            })
+            res.json(exercises.map(exercise => exercise.serialize()))
         })
         .catch(err => {
             console.error(err);

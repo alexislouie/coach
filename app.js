@@ -47,9 +47,14 @@ function displayPrograms(userPrograms, savedPrograms) {
     else {
         userPrograms.forEach(program => {
             $('.js-user-programs').append(`
-                <div id="${program._id}">
-                    ${program.programName}
-                    <button class="js-show-program js-show-program-${program._id}" id="${program._id}">show</button>
+                <div id="program-${program._id}">
+                    <div class="programHeader">
+                        ${program.programName}
+
+                            <button class="js-show-program js-show-program-${program._id}" id="${program._id}">show</button>
+                            <button class="js-edit-program js-edit-program-${program._id}" id="${program._id}">edit</button>
+
+                    </div>
                 </div>
             `);
         })
@@ -84,7 +89,7 @@ function displayPrograms(userPrograms, savedPrograms) {
                 .then(data => {
                     // console.log('data from savedProgram: ', data)
                     $('.js-saved-programs').append(`
-                        <div id="${data.id}">
+                        <div id="program-${data.id}">
                             ${data.programName} by ${data.author}
                             <button class="js-show-program js-show-program-${data.id}" id="${data.id}">show</button>
                         </div>`
@@ -94,47 +99,36 @@ function displayPrograms(userPrograms, savedPrograms) {
     }
 }
 
-function handleSubmit() {
-    $('main').on('click', '.js-save-program', function (event) {
-        event.preventDefault();
+function editProgram() {
+    // if display isn't block, run (toggleProgramDisplay() or whatever to get the program showing)
+    // add style: .exercise-info:hover
 
-        fetch('http://localhost:8080/users',
-            {
-                headers: {
-                    'Authorization': `Bearer ${bearer}`
-                }
-            })
-
-            .then(res => {
-                if (res.ok) {
-                    return res.json();
-                }
-                else {
-                    throw Error(`Request rejected with status ${res.status}`);
-                }
-            })
-            .then(res => {
-                console.log(res);
-            })
-    })
 }
 
 function hideProgram() {
-    $('main').on('click', '.js-hide-program', function (event) {
+    $('main').on('click', '.js-hide-button', function (event) {
         event.preventDefault();
-        console.log(click)
+        console.log('click')
         $(this).prop('hidden', true);
-        $(`#${this.id}-details`).html('');
+        $(`#${this.id}-details`).hide();
         $(`.js-show-button-${this.id}`).prop('hidden', false);
-        // $(`#${this.id}`).append('<button class="js-show-button">show</button>');
+
+        $(`#${this.id}`).append('<button class="js-show-button">show</button>');
     })
 }
 
-function displayUserProgram() {
+function toggleProgramDisplay() {
     $('main').on('click', '.js-show-program', function (event) {
         event.preventDefault();
         $(this).prop('hidden', true);
-        $(`#${this.id}`).append(`<button class="js-hide-button js-hide-button-${this.id}" id="${this.id}">hide</button>`)
+        $(`#program-${this.id}`).append(`<button class="js-hide-button js-hide-button-${this.id}" id="${this.id}">hide</button>`);
+
+        if ($(`#program-${this.id}`).html().length > 0) {
+            $(`#${this.id}-details`).toggleClass('hidden');
+        }
+        else {
+        }
+        // $(`#${this.id}-details`).toggleClass('hidden');
 
         fetch(`http://localhost:8080/programs/${this.id}`, {
             method: 'GET',
@@ -153,7 +147,7 @@ function displayUserProgram() {
             .then(program => {
                 console.log(program);
 
-                $(`#${this.id}`).append(`
+                $(`#program-${this.id}`).append(`
                     <div id="${this.id}-details">
                         Schedule:
                         <br />
@@ -176,7 +170,6 @@ function displayUserProgram() {
 }
 
 function displayScheduleData(id, day) {
-    // run a bunch of if statements for each rep, set, unit, etc?
     for (let i = 0; i < day.exercises.length; i++) {
         $(`#${id}-details`).append(`
             <div class="${day.exercises[i].exercise._id} exercise-info">
@@ -251,8 +244,7 @@ function displayScheduleData(id, day) {
 
 
 displayProfile();
-handleSubmit();
-
+createProgramObj();
 
 
 
@@ -270,7 +262,7 @@ function addProgram() {
 
                 <br /> 
                 <label for="categories">Categories:</label>
-                <select multiple>
+                <select class="categories" multiple>
                     <option value="legs">Legs</option>
                     <option value="back">Back</option>
                     <option value="chest">Chest</option>
@@ -305,49 +297,28 @@ function addProgLength() {
 
         if (programLength == 1) {
             $('.js-add-program-form').append(`
-                <div class="exercises">
-                    <div class="exercise">
-                        <label for="exercise-name">Exercise Name:</label>
-                        <input type="text" class="exercise-name">
-                        <br /> 
+                <div class="day">
+                    <div class="exercises">
+                        <div class="exercise">
+                            <label for="exercise-name">Exercise Name:</label>
+                            <input type="text" class="exercise-name">
+                            <br /> 
 
-                        <label for="sets">Sets:</label>
-                        <input type="number" min="0" max="100" class="sets">
-                        <br /> 
+                            <label for="exercise-type">Exercise Type:</label>
+                            <select name="exercise-type" class="exercise-type">
+                                <option disabled selected value>-- select option --</option>
+                                <option value="sets-reps">sets & reps</option>
+                                <option value="reps-time">reps & time</option>
+                                <option value="reps-distance">reps & distance</option>
+                                <option value="distance-time">distance & time</option>
+                                <option value="reps">reps</option>
+                                <option value="distance">distance</option>
+                                <option value="time">time</option>
+                            </select>
+                            <br />
 
-                        <label for="reps">Reps:</label>
-                        <input type="number" min="0" class="reps">
-                        <br /> 
-
-                        <label for="dist">Distance:</label>
-                        <input type="number" min="0" class="distance">
-
-                        <label for="unitLength">Unit of Length:</label>
-                        <select name="unitLength" class="unitLength">
-                            <option value="meter">m</option>
-                            <option value="kilometer">km</option>
-                            <option value="feet">ft</option>
-                            <option value="mile">mi</option>
-                        </select>
-                        <br /> 
-
-                        <label for="time">Time:</label>
-                        <input type="number" class="time">
-
-                        <label for="unitTime">Unit of Time:</label>
-                        <select name="unitTime">
-                            <option value="minute">m</option>
-                            <option value="hour">hr</option>
-                            <option value="second">s</option>
-                        </select>
-                        <br /> 
-
-                        <label for="comments">Comments:</label>
-                        <input type="text" class="comments">
-
-
-                        <br />
-                        <button class="js-remove-exercise">Remove this Exercise</button>
+                            <button class="js-remove-exercise">Remove this Exercise</button>
+                        </div>
                     </div>
                 </div>
                 <button class="js-add-exercise">Add Another Exercise</button>
@@ -377,6 +348,261 @@ function addProgLength() {
     })
 }
 
+$('main').on('change', '.exercise-type', function (event) {
+    event.preventDefault();
+    const menu = event.target;
+    addExerciseDetails(menu, $(this).val())
+});
+
+function addExerciseDetails(menu, type) {
+    $(menu).siblings('.exercise-details').remove();
+    let html;
+    switch (type) {
+        case 'sets-reps':
+            html = getSetsReps();
+            break;
+        case 'reps-time':
+            html = getRepsTime();
+            break;
+        case 'reps-distance':
+            html = getRepsDistance();
+            break;
+        case 'distance-time':
+            html = getDistanceTime();
+            break;
+
+        case 'reps':
+            html = getReps();
+            break;
+
+        case 'distance':
+            html = getDistance();
+            break;
+        case 'time':
+            html = getTime();
+            break;
+    }
+
+    $(`<div class="exercise-details">
+            ${html}
+            <label for="comments">Comments:</label>
+            <input type="text" class="comments">
+        </div>
+    `).insertAfter(menu)
+}
+
+function getSetsReps() {
+    return `<br />
+        <label for="sets">Sets:</label>
+        <input type="number" min="0" max="100" class="sets">
+        <br /> 
+
+        <label for="reps">Reps:</label>
+        <input type="number" min="0" class="reps">
+        <br />
+    `
+}
+
+function getRepsTime() {
+    return `<br />
+        <label for="reps">Reps:</label>
+        <input type="number" min="0" class="reps">
+        <br /> 
+
+        <label for="time">Time:</label>
+        <input type="number" class="time">
+
+        <select name="unitTime" class="unitTime">
+            <option value="min">min</option>
+            <option value="hr">hr</option>
+            <option value="s">s</option>
+        </select>
+        <br /> 
+    `
+}
+
+function getRepsDistance() {
+    return `<br />
+        <label for="reps">Reps:</label>
+        <input type="number" min="0" class="reps">
+        <br /> 
+
+        <label for="dist">Distance:</label>
+        <input type="number" min="0" class="distance">
+
+        <select name="unitLength" class="unitLength">
+            <option value="m">m</option>
+            <option value="km">km</option>
+            <option value="ft">ft</option>
+            <option value="mi">mi</option>
+        </select>
+        <br /> 
+    `
+}
+
+function getDistanceTime() {
+    return `<br />
+        <label for="dist">Distance:</label>
+        <input type="number" min="0" class="distance">
+
+        <select name="unitLength" class="unitLength">
+            <option value="m">m</option>
+            <option value="km">km</option>
+            <option value="ft">ft</option>
+            <option value="mi">mi</option>
+        </select>
+        <br /> 
+
+        <label for="time">Time:</label>
+        <input type="number" class="time">
+
+        <select name="unitTime" class="unitTime">
+            <option value="min">min</option>
+            <option value="hr">hr</option>
+            <option value="s">s</option>
+        </select>
+        <br /> 
+    `
+}
+
+function getReps() {
+    return `<br />
+        <label for="reps">Reps:</label>
+        <input type="number" min="0" class="reps">
+        <br /> 
+    `
+}
+
+function getDistance() {
+    return `<br />
+        <label for="dist">Distance:</label>
+        <input type="number" min="0" class="distance">
+
+        <select name="unitLength" class="unitLength">
+            <option value="m">m</option>
+            <option value="km">km</option>
+            <option value="ft">ft</option>
+            <option value="mi">mi</option>
+        </select>
+        <br /> 
+    `
+}
+
+function getTime() {
+    return `<br />
+        <label for="time">Time:</label>
+        <input type="number" class="time">
+
+        <select name="unitTime" class="unitTime">
+            <option value="min">min</option>
+            <option value="hr">hr</option>
+            <option value="s">s</option>
+        </select>
+        <br /> 
+    `
+}
+// function getDataFromApi(searchTerm, callback) {
+//     const settings = {
+//       url: GITHUB_SEARCH_URL,
+//       data: {
+//         q: `${searchTerm} in:name`,
+//         per_page: 5
+//       },
+//       dataType: 'json',
+//       type: 'GET',
+//       success: callback
+//     };
+
+//     $.ajax(settings);
+//   }
+
+$(function autocomplete() {
+    const exerciseOptions = {
+        url: "http://localhost:8080/exercises",
+        ajaxSettings: {
+            dataType: "json",
+            method: 'GET'
+        },
+        getValue: 'name',
+        list: {
+            match: {
+                enabled: true
+            }
+        },
+        theme: "square"
+    };
+
+    $('.exercise-name').easyAutocomplete(exerciseOptions);
+});
+
+
+function createProgramObj() {
+    $('main').on('click', '.js-save-program', function (event) {
+        event.preventDefault();
+
+        const programObj = {};
+        programObj['programName'] = $('.programName').val();
+        programObj['categories'] = $('.categories').val();
+        programObj['schedule'] = createSchedule();
+
+        console.log('programObj: ', programObj)
+    })
+}
+
+function createSchedule() {
+    const schedule = [];
+    $('.day').each(function (index, day) {
+        const dayObj = {};
+
+        if ($('.name')) {
+            const name = $(day).find('.name').first().val();
+            dayObj['name'] = name;
+        }
+
+        dayObj['exercises'] = createExercises(day);
+
+        schedule.push(dayObj);
+    })
+    console.log('schedule: ', schedule)
+    return schedule;
+}
+
+function createExercises(day) {
+    const exercisesArray = [];
+    const exercises = $(day).find('.exercise')
+
+    $(exercises).each(function (index, exercise) {
+        const exerciseObj = {};
+        const name = $(exercise).find('.exercise-name').first().val();
+        const type = $(exercise).find('.exercise-type').first().val();
+        const comments = $(exercise).find('.comments').first().val();
+        const descriptors = type.split('-');
+
+        if (descriptors.includes('time')) {
+            const unitTime = $(exercise).find('.unitTime').first().val();
+            exerciseObj['unitTime'] = unitTime;
+        }
+        if (descriptors.includes('distance')) {
+            const unitLength = $(exercise).find('.unitLength').first().val();
+            exerciseObj['unitLength'] = unitLength;
+
+        }
+
+        exerciseObj['name'] = name;
+        exerciseObj['type'] = type;
+
+        exerciseObj[`${descriptors[0]}`] = $(exercise).find(`.${descriptors[0]}`).first().val();
+        if (descriptors[1]) {
+            exerciseObj[`${descriptors[1]}`] = $(exercise).find(`.${descriptors[1]}`).first().val();
+        }
+        exerciseObj['comments'] = comments;
+
+        exercisesArray.push(exerciseObj);
+    })
+    console.log('exercisesArray: ', exercisesArray)
+    return exercisesArray;
+}
+
 function addExercise() {
     const newProgram = `
         <div class="exercise">
@@ -384,42 +610,19 @@ function addExercise() {
             <input type="text" class="exercise-name">
             <br /> 
 
-            <label for="sets">Sets:</label>
-            <input type="number" min="0" max="100" class="sets">
-            <br /> 
-
-            <label for="reps">Reps:</label>
-            <input type="number" min="0" class="reps">
-            <br /> 
-
-            <label for="dist">Distance:</label>
-            <input type="number" min="0" class="distance">
-
-            <label for="unitLength">Unit of Length:</label>
-            <select name="unitLength" class="unitLength">
-                <option value="meter">m</option>
-                <option value="kilometer">km</option>
-                <option value="feet">ft</option>
-                <option value="mile">mi</option>
+            <label for="exercise-type">Exercise Type:</label>
+            <select name="exercise-type" class="exercise-type">
+                <option disabled selected value>-- select option --</option>
+                <option value="sets-reps">sets & reps</option>
+                <option value="reps-time">reps & time</option>
+                <option value="reps-distance">reps & distance</option>
+                <option value="distance-time">distance & time</option>
+                <option value="reps">reps</option>
+                <option value="distance">distance</option>
+                <option value="time">time</option>
             </select>
-            <br /> 
-
-            <label for="time">Time:</label>
-            <input type="number" class="time">
-
-            <label for="unitTime">Unit of Time:</label>
-            <select name="unitTime">
-                <option value="minute">m</option>
-                <option value="hour">hr</option>
-                <option value="second">s</option>
-            </select>
-            <br /> 
-
-            <label for="comments">Comments:</label>
-            <input type="text" class="comments">
-
-
             <br />
+
             <button class="js-remove-exercise">Remove this Exercise</button>
         </div>
     `
@@ -440,460 +643,7 @@ function removeExercise() {
     });
 }
 
-// function getAndDisplayProfileData() {
-//     getProfileData(displayProfileData);
-// }
-
-function handleSubmitButton() {
-    // CONFIRM THAT Exercise Name IS INCLUDED 
-}
-
-// $(function () {
-//     getAndDisplayProfileData();
-// })
-
-// For when searching for programs
-// const MOCK_PROGRAM_DATA = [
-//     {
-//         id: 1230984921,
-//         programName: "7 Days of Dumbbells",
-//         author: "alouie1020",
-//         length: 7,
-//         publishedAt: 1470009976609,
-//         schedule: [
-//             {
-//                 name: "Day 1: Legs & Glutes",
-//                 exercises: 
-//                     [ 
-//                         {
-//                             name: "SS DB sumo pulse squat",
-//                             sets: 3,
-//                             reps: 12,
-//                         },
-//                         {
-//                             name: "DB glute thrust pulses x 60s",
-//                             sets: 3,
-//                             time: 60,
-//                             unitTime: "s"
-//                         },
-//                         {
-//                             name: "SS Stationary lunges",
-//                             sets: 3,
-//                             reps: 12,
-//                             comments: "*Perform both exercises with the same leg, then switch*"
-//                         },
-//                         {
-//                             name: "SL hip thrust + banded knee pull",
-//                             sets: 3, 
-//                             reps: 12,
-//                             comments: "*band is optional*"
-//                         },
-//                         {
-//                             name: "Circuit: Weighted side to side lateral lunge",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "Circuit: 35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "DB Romanian deadlifts",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "Lateral to squat jumps",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         }
-//                     ]
-//             },
-//             {
-//                 name: "Day 2: Back & Triceps",
-//                 exercises: 
-//                     [ 
-//                         {
-//                             name: "SS DB sumo pulse squat",
-//                             sets: 3,
-//                             reps: 12,
-//                         },
-//                         {
-//                             name: "DB glute thrust pulses x 60s",
-//                             sets: 3,
-//                             time: 60,
-//                             unitTime: "s"
-//                         },
-//                         {
-//                             name: "SS Stationary lunges",
-//                             sets: 3,
-//                             reps: 12,
-//                             comments: "*Perform both exercises with the same leg, then switch*"
-//                         },
-//                         {
-//                             name: "SL hip thrust + banded knee pull",
-//                             sets: 3, 
-//                             reps: 12,
-//                             comments: "*band is optional*"
-//                         },
-//                         {
-//                             name: "Circuit: Weighted side to side lateral lunge",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "Circuit: 35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "DB Romanian deadlifts",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "Lateral to squat jumps",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         }
-//                     ]
-//             },
-//             {
-//                 name: "Day 3: Stretch It Out",
-//                 exercises: 
-//                     [ 
-//                         {
-//                             name: "SS DB sumo pulse squat",
-//                             sets: 3,
-//                             reps: 12,
-//                         },
-//                         {
-//                             name: "DB glute thrust pulses x 60s",
-//                             sets: 3,
-//                             time: 60,
-//                             unitTime: "s"
-//                         },
-//                         {
-//                             name: "SS Stationary lunges",
-//                             sets: 3,
-//                             reps: 12,
-//                             comments: "*Perform both exercises with the same leg, then switch*"
-//                         },
-//                         {
-//                             name: "SL hip thrust + banded knee pull",
-//                             sets: 3, 
-//                             reps: 12,
-//                             comments: "*band is optional*"
-//                         },
-//                         {
-//                             name: "Circuit: Weighted side to side lateral lunge",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "Circuit: 35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "DB Romanian deadlifts",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "Lateral to squat jumps",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         }
-//                     ]
-//             },
-//             {
-//                 name: "Day 4: Upper Body Cardio",
-//                 exercises: 
-//                     [ 
-//                         {
-//                             name: "SS DB sumo pulse squat",
-//                             sets: 3,
-//                             reps: 12,
-//                         },
-//                         {
-//                             name: "DB glute thrust pulses x 60s",
-//                             sets: 3,
-//                             time: 60,
-//                             unitTime: "s"
-//                         },
-//                         {
-//                             name: "SS Stationary lunges",
-//                             sets: 3,
-//                             reps: 12,
-//                             comments: "*Perform both exercises with the same leg, then switch*"
-//                         },
-//                         {
-//                             name: "SL hip thrust + banded knee pull",
-//                             sets: 3, 
-//                             reps: 12,
-//                             comments: "*band is optional*"
-//                         },
-//                         {
-//                             name: "Circuit: Weighted side to side lateral lunge",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "Circuit: 35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "DB Romanian deadlifts",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "Lateral to squat jumps",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         }
-//                     ]
-//             },
-//             {
-//                 name: "Day 5: Full Body HIIT",
-//                 exercises: 
-//                     [ 
-//                         {
-//                             name: "SS DB sumo pulse squat",
-//                             sets: 3,
-//                             reps: 12,
-//                         },
-//                         {
-//                             name: "DB glute thrust pulses x 60s",
-//                             sets: 3,
-//                             time: 60,
-//                             unitTime: "s"
-//                         },
-//                         {
-//                             name: "SS Stationary lunges",
-//                             sets: 3,
-//                             reps: 12,
-//                             comments: "*Perform both exercises with the same leg, then switch*"
-//                         },
-//                         {
-//                             name: "SL hip thrust + banded knee pull",
-//                             sets: 3, 
-//                             reps: 12,
-//                             comments: "*band is optional*"
-//                         },
-//                         {
-//                             name: "Circuit: Weighted side to side lateral lunge",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "Circuit: 35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "DB Romanian deadlifts",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "Lateral to squat jumps",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         }
-//                     ]
-//             },
-//             {
-//                 name: "Day 6: Mobility Work",
-//                 exercises: 
-//                     [ 
-//                         {
-//                             name: "SS DB sumo pulse squat",
-//                             sets: 3,
-//                             reps: 12,
-//                         },
-//                         {
-//                             name: "DB glute thrust pulses x 60s",
-//                             sets: 3,
-//                             time: 60,
-//                             unitTime: "s"
-//                         },
-//                         {
-//                             name: "SS Stationary lunges",
-//                             sets: 3,
-//                             reps: 12,
-//                             comments: "*Perform both exercises with the same leg, then switch*"
-//                         },
-//                         {
-//                             name: "SL hip thrust + banded knee pull",
-//                             sets: 3, 
-//                             reps: 12,
-//                             comments: "*band is optional*"
-//                         },
-//                         {
-//                             name: "Circuit: Weighted side to side lateral lunge",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "Circuit: 35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "DB Romanian deadlifts",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "Lateral to squat jumps",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         }
-//                     ]
-//             },
-//             {
-//                 name: "Day 7: Cardio & Core",
-//                 exercises: 
-//                     [ 
-//                         {
-//                             name: "SS DB sumo pulse squat",
-//                             sets: 3,
-//                             reps: 12,
-//                         },
-//                         {
-//                             name: "DB glute thrust pulses x 60s",
-//                             sets: 3,
-//                             time: 60,
-//                             unitTime: "s"
-//                         },
-//                         {
-//                             name: "SS Stationary lunges",
-//                             sets: 3,
-//                             reps: 12,
-//                             comments: "*Perform both exercises with the same leg, then switch*"
-//                         },
-//                         {
-//                             name: "SL hip thrust + banded knee pull",
-//                             sets: 3, 
-//                             reps: 12,
-//                             comments: "*band is optional*"
-//                         },
-//                         {
-//                             name: "Circuit: Weighted side to side lateral lunge",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "Circuit: 35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "DB Romanian deadlifts",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         },
-//                         {
-//                             name: "Lateral to squat jumps",
-//                             sets: 3,
-//                             time: 35,
-//                             unitTime: "s",
-//                             comments: "35 seconds work / 15 seconds rest"
-//                         }
-//                     ]
-//             }
-//         ]
-//     },
-//     {
-//         id: 1230984922,
-//         programName: "Beginner Leg Day",
-//         author: "alouie1020",
-//         length: 1,
-//         publishedAt: 1470009975700,
-//         schedule: [
-//             {
-//                 exercises: [ 
-//                     {
-//                         name: "Barbell Squat",
-//                         sets: 4,
-//                         reps: 12,
-//                         comments: "Begin with lighter weight, increase incrementally"
-//                     },
-//                     {
-//                         name: "Sumo Deadlift",
-//                         sets: 4, 
-//                         reps: 12
-//                     },
-//                     {
-//                         name: "Glute Bridge",
-//                         sets: 4, 
-//                         reps: 20
-//                     },
-//                     {
-//                         name: "SL Romanian Deadlift",
-//                         sets: 4, 
-//                         reps: 15
-//                     }
-//                 ]
-//             }
-//         ]
-//     }
-// ]
-
-// function getProgramData(callback) {
-//     setTimeout(function() { callback(MOCK_PROGRAM_DATA)}, 100);
-// }
-
-// function displayProgramData(data) {
-//     for (program of data) {
-//         const { programName, author, schedule } = program;
-//         $('body').append(`
-//             <h2>${programName}</h2>
-//             by ${author}
-//         `);
-//         for (day of schedule) {
-//             const { exercises } = day;
-//             // if it's a single workout (i.e. not an entire program), this wont exist
-//             if (day.name) {
-//                 $('body').append(`
-//                     <h3>${day.name}</h3>
-//                 `);
-//             }
-//             for (exercise of exercises) {
-//                 for (const prop in exercise) {
-//                     if (prop === "name") {
-//                         $('body').append(
-//                             `<br />
-//                             <b>Exercise</b>: ${exercise[prop]}`
-//                         )
-//                     } else {
-//                         $('body').append(
-//                             `<li>${prop}: ${exercise[prop]}</li>`
-//                         )
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
-// function getAndDisplayProgramData() {
-//     getProgramData(displayProgramData);
-// }
-
-// $(function() {
-//     getAndDisplayProgramData();
-// })
 
 $(addProgram);
-displayUserProgram();
+toggleProgramDisplay();
 hideProgram();

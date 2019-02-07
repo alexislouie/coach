@@ -170,14 +170,15 @@ function appendProgramDetailsForm(program, location) {
     `);
 
     for (let i = 0; i < program.schedule.length; i++) {
-        if (program.schedule[i].name) {
+        const day = program.schedule[i];
+        if (day.name) {
             // $(`#${program.id}-details`).append(`
             $(`.program-details[data-program-id="${program.id}"]`).append(`
-                <span class="day-name editable">${program.schedule[i].name}:</span>
+                <span class="day-name editable">${day.name}:</span>
                 <br />
             `)
         }
-        displayScheduleData(program.id, program.schedule[i]);
+        displayScheduleData(program.id, day);
     }
 }
 
@@ -245,10 +246,15 @@ function editProgram() {
     })
 // })
 
+
+
+
+
 function displayScheduleData(id, day) {
     for (let i = 0; i < day.exercises.length; i++) {
+        const exerciseId = day.exercises[i].exercise._id; 
         $(`.program-details[data-program-id="${id}"]`).append(`
-            <div class="${id}-${day.exercises[i].exercise._id} ${day.exercises[i].exercise._id} editable exercise-info">
+            <div class="exercise-info editable" data-program-id="${id}" data-exercise-id="${exerciseId}">
                 <span class="exercise-name">${day.exercises[i].exercise.name}</span>:
             </div>
         `);
@@ -259,7 +265,7 @@ function displayScheduleData(id, day) {
                 if (!(day.exercises[i].sets || day.exercises[i].reps)) {
                     break;
                 }
-                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]`).append(`
                     <span class="sets-reps">
                         ${day.exercises[i].sets} x ${day.exercises[i].reps}
                     </span>
@@ -267,7 +273,7 @@ function displayScheduleData(id, day) {
                 `);
                 break;
             case 'reps & time':
-                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]`).append(`
                     <span class="reps-time">
                         ${day.exercises[i].reps} x ${day.exercises[i].time} ${day.exercises[i].unitTime}
                     </span>
@@ -275,7 +281,7 @@ function displayScheduleData(id, day) {
                 `);
                 break;
             case 'reps & distance':
-                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]`).append(`
                     <span class="reps-distance">
                         ${day.exercises[i].reps} x ${day.exercises[i].distance} ${day.exercises[i].unitLength}
                     </span>
@@ -283,7 +289,7 @@ function displayScheduleData(id, day) {
                 `);
                 break;
             case 'distance & time':
-                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]`).append(`
                     <span class="distance-time">
                         ${day.exercises[i].distance} ${day.exercises[i].unitLength} in ${day.exercises[i].time} ${day.exercises[i].unitTime}
                     </span>
@@ -295,7 +301,7 @@ function displayScheduleData(id, day) {
                 if (!(day.exercises[i].reps)) {
                     break;
                 };
-                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]`).append(`
                     <span class="reps">
                         ${day.exercises[i].reps}
                     </span>
@@ -307,7 +313,7 @@ function displayScheduleData(id, day) {
                 if (!(day.exercises[i].distance)) {
                     break;
                 };
-                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]`).append(`
                     <span class="distance">
                         ${day.exercises[i].distance} ${day.exercises[i].unitLength}
                     </span>
@@ -318,7 +324,7 @@ function displayScheduleData(id, day) {
                 if (!(day.exercises[i].time)) {
                     break;
                 };
-                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]`).append(`
                     <span class="time">
                         ${day.exercises[i].time} ${day.exercises[i].unitTime}
                     </span>
@@ -328,7 +334,7 @@ function displayScheduleData(id, day) {
         }
 
         if (day.exercises[i].comments) {
-            $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+            $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]`).append(`
                 <br />
                 <i>
                     Comments: ${day.exercises[i].comments}<br />
@@ -337,8 +343,6 @@ function displayScheduleData(id, day) {
         }
     }
 }
-
-
 
 displayProfile();
 createProgramObj();

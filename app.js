@@ -20,7 +20,6 @@ function displayProfile() {
             }
         })
         .then(data => {
-            console.log(data);
             const userPrograms = data.userPrograms;
             const savedPrograms = data.savedPrograms;
             displayHeader(data.userName);
@@ -34,40 +33,64 @@ function displayHeader(userName) {
     `);
 }
 
+function displayUserProgramsDefault() {
+    $('.js-user-programs').append(`
+        <div>
+            <span>You haven't created any programs</span>
+            <br /> 
+            <span>Click Here to Add Program</span>
+        </div>
+    `);
+}
+
+function displayUserPrograms(program) {
+    $('.js-user-programs').append(`
+        <div class="program" data-program-id="${program._id}">
+            <div class="programHeader">
+                <h2>${program.programName}</h2>
+                <nav class="program-buttons">
+                    <button class="js-fetch-program" data-program-id="${program._id}">show</button>
+                </nav>
+            </div>
+        </div>
+    `);
+}
+
+function displaySavedPrograms(program) {
+    $('.js-saved-programs').append(`
+        <div class="program" data-program-id="${program.id}">
+            <div class="programHeader">
+                <h2>${program.programName} by ${program.author}</h2>
+                <nav class="program-buttons">
+                    <button class="js-show-program" data-program-id="${program.id}">toggle</button>
+                </div>
+            </div>
+        </div>
+    `);
+}
+
+function displaySavedProgramsDefault() {
+    $('.js-saved-programs').append(`
+        <div class="programHeader">
+            <span>You haven't saved any programs</span>
+            <br /> 
+            <span>Click here to search our catalog of programs</span>
+        </div>
+    `);
+}
+
 function displayPrograms(userPrograms, savedPrograms) {
     if (!userPrograms) {
-        $('.js-user-programs').append(`
-            <div>
-                <span>You haven't created any programs</span>
-                <br /> 
-                <span>Click Here to Add Program</span>
-            </div>
-        `);
+        displayUserProgramsDefault();
     }
     else {
         userPrograms.forEach(program => {
-            $('.js-user-programs').append(`
-                <div id="program-${program._id}">
-                    <div class="programHeader">
-                        ${program.programName}
-
-                            <button class="js-show-program js-show-program-${program._id}" id="${program._id}">show</button>
-                            <button class="js-edit-program js-edit-program-${program._id}" id="${program._id}">edit</button>
-
-                    </div>
-                </div>
-            `);
+            displayUserPrograms(program);
         })
     }
 
     if (!savedPrograms) {
-        $('.js-saved-programs').append(`
-            <div>
-                <span>You haven't saved any programs</span>
-                <br /> 
-                <span>Click here to search our catalog of programs</span>
-            </div>
-        `);
+        displaySavedProgramsDefault();
     }
     else {
         savedPrograms.forEach(program => {
@@ -87,93 +110,146 @@ function displayPrograms(userPrograms, savedPrograms) {
                     }
                 })
                 .then(data => {
-                    // console.log('data from savedProgram: ', data)
-                    $('.js-saved-programs').append(`
-                        <div id="program-${data.id}">
-                            ${data.programName} by ${data.author}
-                            <button class="js-show-program js-show-program-${data.id}" id="${data.id}">show</button>
-                        </div>`
-                    );
+                    const container = '.js-saved-programs';
+                    displaySavedPrograms(data);
+                    appendProgramDetailsForm(data, container);
+                    $(`.program-details[data-program-id="${data.id}"]`).toggleClass('hidden');
                 })
         })
     }
 }
 
-function editProgram() {
-    // if display isn't block, run (toggleProgramDisplay() or whatever to get the program showing)
-    // add style: .exercise-info:hover
+function handleFetchButton() {
+    $('main').on('click', '.js-fetch-program', function (event) {
+        event.preventDefault();
+        $(this).prop('hidden', true);
 
+        const programId = $(this).closest('.program').data('program-id');
+        $(this).closest('.program-buttons').prepend(`<button class="js-show-program" data-program-id="${programId}">toggle</button>`);
+
+        const container = '.js-user-programs';
+        fetchProgram(programId, container);
+    })
 }
 
-function hideProgram() {
-    $('main').on('click', '.js-hide-button', function (event) {
-        event.preventDefault();
-        console.log('click')
-        $(this).prop('hidden', true);
-        $(`#${this.id}-details`).hide();
-        $(`.js-show-button-${this.id}`).prop('hidden', false);
-
-        $(`#${this.id}`).append('<button class="js-show-button">show</button>');
+function fetchProgram(id, container) {
+    fetch(`http://localhost:8080/programs/${id}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${bearer}`
+        }
     })
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            }
+            else {
+                throw Error(`Request rejected with status ${res.status}`);
+            }
+        })
+        .then(program => {
+            return appendProgramDetailsForm(program, container);
+        })
+}
+
+function appendProgramDetailsForm(program, location) {
+    const categories = program.categories.join(', ');
+
+    $(location).find(`.program[data-program-id="${program.id}"]`).append(`
+        <div class="program-details" data-program-id="${program.id}">
+            Categories: 
+            <!-- <span class="editable categories">${categories}</span> --!>
+            <form class="editCategories-form edit-form">
+                <input type="select" class="editable categories view" value="${categories}" readonly></input>
+            </form>
+            <br /> 
+            <br /> 
+            Schedule:
+            <br />
+        </div>
+    `);
+
+    for (let i = 0; i < program.schedule.length; i++) {
+        if (program.schedule[i].name) {
+            // $(`#${program.id}-details`).append(`
+            $(`.program-details[data-program-id="${program.id}"]`).append(`
+                <span class="day-name editable">${program.schedule[i].name}:</span>
+                <br />
+            `)
+        }
+        displayScheduleData(program.id, program.schedule[i]);
+    }
 }
 
 function toggleProgramDisplay() {
     $('main').on('click', '.js-show-program', function (event) {
         event.preventDefault();
-        $(this).prop('hidden', true);
-        $(`#program-${this.id}`).append(`<button class="js-hide-button js-hide-button-${this.id}" id="${this.id}">hide</button>`);
-
-        if ($(`#program-${this.id}`).html().length > 0) {
-            $(`#${this.id}-details`).toggleClass('hidden');
-        }
-        else {
-        }
-        // $(`#${this.id}-details`).toggleClass('hidden');
-
-        fetch(`http://localhost:8080/programs/${this.id}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${bearer}`
-            }
-        })
-            .then(res => {
-                if (res.ok) {
-                    return res.json();
-                }
-                else {
-                    throw Error(`Request rejected with status ${res.status}`);
-                }
-            })
-            .then(program => {
-                console.log(program);
-
-                $(`#program-${this.id}`).append(`
-                    <div id="${this.id}-details">
-                        Schedule:
-                        <br />
-                    </div>
-                `);
-
-                for (let i = 0; i < program.schedule.length; i++) {
-                    if (program.schedule[i].name) {
-                        $(`#${this.id}-details`).append(`
-                            ${program.schedule[i].name}: 
-                            <br />
-                        `)
-                    }
-                    console.log(program.schedule[i])
-                    displayScheduleData(this.id, program.schedule[i]);
-                }
-
-            })
+        const programId = $(this).attr('data-program-id');
+        // console.log(programId);
+        $(this).closest('div').siblings(`.program-details`).toggleClass('hidden');
     })
 }
 
+function editProgram() {
+    $('main').on('click', '.editable', function (event) {
+        event.preventDefault();
+        console.log('this', this)
+        $(this).toggleClass('view');
+
+        if ($(this).attr('readonly')) {
+            $(this).removeAttr('readonly');
+            $(this).closest('form').append(`
+            <button type="submit" class="js-editSection-button">save</button>
+        `)
+        }
+        else {
+            $(this).attr('readonly', 'readonly');
+            $('.js-editSection-button').remove();
+        }
+        
+        // if ($(this).hasClass('categories')) {
+        //     // this.append('<button>save</button>')
+        //     const inputText = $(this).text();
+        //     $(this).html('');
+        //     $(this).append(`
+        //         <form class="edit-form">
+        //             <input type="text" class="editable categories" value=${inputText}></input>
+        //             <button type="submit">save</button>
+        //         </form>
+        //     `)
+        // }
+        // if has class sets-reps, distance-time, or whatever, create X 
+
+    })
+
+}
+
+// $(function handleEditButton() {
+    $('body').on('click', '.edit-form .js-editSection-button', function(event){
+        // $('.edit-form').submit(function(event){
+        event.preventDefault();
+
+
+        if ($(this).closest('form').hasClass('editCategories-form')) {
+            const programId = $(this).closest('.program').attr('data-program-id');
+            console.log(programId);
+            // (fetch(`http://localhost:8080/programs/${id}`,
+            //     {
+            //         method: 'GET',
+            //         headers: {
+            //             'Authorization': `Bearer ${bearer}`
+        
+            //         }
+            //     })
+        }
+    })
+// })
+
 function displayScheduleData(id, day) {
     for (let i = 0; i < day.exercises.length; i++) {
-        $(`#${id}-details`).append(`
-            <div class="${day.exercises[i].exercise._id} exercise-info">
-                ${day.exercises[i].exercise.name}:
+        $(`.program-details[data-program-id="${id}"]`).append(`
+            <div class="${id}-${day.exercises[i].exercise._id} ${day.exercises[i].exercise._id} editable exercise-info">
+                <span class="exercise-name">${day.exercises[i].exercise.name}</span>:
             </div>
         `);
 
@@ -183,23 +259,35 @@ function displayScheduleData(id, day) {
                 if (!(day.exercises[i].sets || day.exercises[i].reps)) {
                     break;
                 }
-                $(`.${day.exercises[i].exercise._id}`).append(`
-                        ${day.exercises[i].sets} x ${day.exercises[i].reps}<br />
+                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                    <span class="sets-reps">
+                        ${day.exercises[i].sets} x ${day.exercises[i].reps}
+                    </span>
+                    <br />
                 `);
                 break;
             case 'reps & time':
-                $(`.${day.exercises[i].exercise._id}`).append(`
-                    ${day.exercises[i].reps} x ${day.exercises[i].time} ${day.exercises[i].unitTime}<br />
+                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                    <span class="reps-time">
+                        ${day.exercises[i].reps} x ${day.exercises[i].time} ${day.exercises[i].unitTime}
+                    </span>
+                    <br />
                 `);
                 break;
             case 'reps & distance':
-                $(`.${day.exercises[i].exercise._id}`).append(`
-                    ${day.exercises[i].reps} x ${day.exercises[i].distance} ${day.exercises[i].unitLength}<br />
+                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                    <span class="reps-distance">
+                        ${day.exercises[i].reps} x ${day.exercises[i].distance} ${day.exercises[i].unitLength}
+                    </span>
+                    <br />
                 `);
                 break;
             case 'distance & time':
-                $(`.${day.exercises[i].exercise._id}`).append(`
-                    ${day.exercises[i].distance} ${day.exercises[i].unitLength} in ${day.exercises[i].time} ${day.exercises[i].unitTime}<br />
+                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                    <span class="distance-time">
+                        ${day.exercises[i].distance} ${day.exercises[i].unitLength} in ${day.exercises[i].time} ${day.exercises[i].unitTime}
+                    </span>
+                    <br />    
                 `);
                 break;
 
@@ -207,8 +295,11 @@ function displayScheduleData(id, day) {
                 if (!(day.exercises[i].reps)) {
                     break;
                 };
-                $(`.${day.exercises[i].exercise._id}`).append(`
-                    ${day.exercises[i].reps}<br />
+                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                    <span class="reps">
+                        ${day.exercises[i].reps}
+                    </span>
+                    <br />
                 `);
                 break;
 
@@ -216,22 +307,28 @@ function displayScheduleData(id, day) {
                 if (!(day.exercises[i].distance)) {
                     break;
                 };
-                $(`.${day.exercises[i].exercise._id}`).append(`
-                    ${day.exercises[i].distance} ${day.exercises[i].unitLength}<br />
+                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                    <span class="distance">
+                        ${day.exercises[i].distance} ${day.exercises[i].unitLength}
+                    </span>
+                    <br />
                 `);
                 break;
             case 'time':
                 if (!(day.exercises[i].time)) {
                     break;
                 };
-                $(`.${day.exercises[i].exercise._id}`).append(`
-                    ${day.exercises[i].time} ${day.exercises[i].unitTime}<br />
+                $(`.${id}-${day.exercises[i].exercise._id}`).append(`
+                    <span class="time">
+                        ${day.exercises[i].time} ${day.exercises[i].unitTime}
+                    </span>
+                    <br />
                 `);
                 break;
         }
 
         if (day.exercises[i].comments) {
-            $(`.${day.exercises[i].exercise._id}`).append(`
+            $(`.${id}-${day.exercises[i].exercise._id}`).append(`
                 <br />
                 <i>
                     Comments: ${day.exercises[i].comments}<br />
@@ -245,8 +342,6 @@ function displayScheduleData(id, day) {
 
 displayProfile();
 createProgramObj();
-
-
 
 
 function addProgram() {
@@ -563,7 +658,6 @@ function createSchedule() {
 
         schedule.push(dayObj);
     })
-    console.log('schedule: ', schedule)
     return schedule;
 }
 
@@ -599,7 +693,7 @@ function createExercises(day) {
 
         exercisesArray.push(exerciseObj);
     })
-    console.log('exercisesArray: ', exercisesArray)
+
     return exercisesArray;
 }
 
@@ -645,5 +739,6 @@ function removeExercise() {
 
 
 $(addProgram);
+handleFetchButton();
 toggleProgramDisplay();
-hideProgram();
+editProgram();

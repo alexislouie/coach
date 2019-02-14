@@ -94,7 +94,6 @@ programSchema.pre('find', function (next) {
 // });
 
 programSchema.methods.serialize = function () {
-    console.log('programSchema serialize');
     // console.log('serialized program: ', this);
     return {
         id: this._id,

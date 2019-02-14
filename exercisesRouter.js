@@ -36,4 +36,10 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
         });
 })
 
+router.post('/list', jwtAuth, jsonParser, (req, res) => {
+    Exercise
+        .find({ name: new RegExp(req.body.name, 'i')})
+        .then(data => res.json(data))
+})
+
 module.exports = router;

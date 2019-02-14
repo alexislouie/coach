@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html class="no-js">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Coaching App</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway" rel="stylesheet">
+    <link rel="stylesheet" href="main.css">
+</head>
+
+
+<header>
+    <nav role="navigation">
+        <span>Hey Coach!</span>
+        <ul>
+            <li><a href="/signup.html">Sign Up</a></li>
+            <li><a href="/login.html">Log In</a></li>
+        </ul>
+    </nav>
+</header>
+
+<body>
+    <main>
+
+        <form class="login-form forms" action="/auth/login" method="post">
+            <fieldset>
+                <legend>Login up</legend>
+                <label for="username">Username:</label>
+                <input type="text" class="login-input" id="login-username" required />
+
+                <label for="password">Password</label>
+                <input type="password" class="login-input" id="login-password" required />
+
+                <button type="submit" class="form-button js-login-button">Log In</button>
+            </fieldset>
+        </form>
+
+        <div class="form-links">
+            <br />
+            Are you new here?
+            <a href="/signup.html">Sign Up</a>
+        </div>
+
+        <a href="/profile.html">Go to Profile</a>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+    <script src="/scripts/signup.js"></script>
+
+
+</body>
+
+</html>

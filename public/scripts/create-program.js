@@ -1,40 +1,8 @@
-function addProgram() {
-    $('main').on('click', '.js-add-button', function (event) {
-        event.preventDefault();
-        $('.js-add-button').prop('hidden', true);
-        $('.js-user-programs').prop('hidden', true);
-        $('.js-saved-programs').prop('hidden', true);
-        $('.js-add-programs').append(`
-            <form class="js-add-program-form add-program-form">
-                <label for="program-name">Program Name:</label>
-                <input type="text" class="programName">
-
-                <br /> 
-                <label for="categories">Categories:</label>
-                <select class="categories" multiple>
-                    <option value="legs">Legs</option>
-                    <option value="back">Back</option>
-                    <option value="chest">Chest</option>
-                    <option value="biceps">Biceps</option>
-                    <option value="triceps">Triceps</option>
-                    <option value="shoulders">Shoulders</option>
-                    <option value="fullBody">Full Body</option>
-                    <option value="cardio">Cardio</option>
-                </select>
-
-                <br /> 
-                <label for="programLength">Program Length (in days):</label>
-                <input type="number" min="1" max="365" class="programLength">
-
-                <button type="submit" class="js-add-progLength">Add Length</button>
-            </form>
-        `);
-        addProgLength();
-    })
-}
+const bearer = localStorage.getItem('authToken');
+const id = localStorage.getItem('userId');
 
 function addProgLength() {
-    $('.js-add-program-form').on('click', '.js-add-progLength', function (event) {
+    $('body').on('click', '.js-add-progLength', function (event) {
         event.preventDefault();
         $('.js-add-progLength').prop('hidden', true);
         const programLength = $('.programLength').val();
@@ -283,7 +251,7 @@ function createSchedule() {
     const schedule = [];
     $('.day').each(function (index, day) {
         const dayObj = {};
-        if ($('.name')) {
+        if ($('div').hasClass('name')) {
             const name = $(day).find('.name').first().val();
             dayObj['name'] = name;
         }
@@ -358,9 +326,33 @@ function addExercise() {
     $('body').on('click', '.js-add-exercise', function (event) {
         event.preventDefault();
         $('.exercises').append(newExercise);
-
+        const exerciseOptions = {
+            url: function(phrase) {
+                return '/exercises/list'
+            },
+            getValue: function(element) {
+                return element.name;
+            },
+            ajaxSettings: {
+                dataType: "json",
+                method: "POST",
+                headers: {
+                    'Authorization':`Bearer ${bearer}`
+                },
+                data: {
+                  dataType: "json"
+                },
+            },
+            preparePostData: function(data) {
+                data.name = $('.exercise-name').val().trim();
+                return data;
+            },
+            requestDelay: 300
+        };
+        $('.exercise-name').easyAutocomplete(exerciseOptions);
     });
-    $('.js-add-program-form').on('click', '.js-add-prog-exercise', function (event) {
+
+    $('body').on('click', '.js-add-prog-exercise', function (event) {
         event.preventDefault();
         $(this).before(newExercise);
         const exerciseOptions = {
@@ -398,5 +390,6 @@ function removeExercise() {
 }
 
 
-$(addProgram);
+// $(addProgram);
+addProgLength();
 createProgramObj();

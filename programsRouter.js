@@ -27,6 +27,7 @@ router.get('/', jwtAuth, (req, res) => {
         .find(filters)
         .then(programs => {
             res.json(programs.map(program => program.serialize()))
+            // res.json(programs)
         })
         .catch(err => {
             console.error(err);
@@ -37,7 +38,11 @@ router.get('/', jwtAuth, (req, res) => {
 router.get('/:id', (req, res) => {
     Program
         .findById(req.params.id)
-        .then(program => res.json(program.serialize()))
+        .then(program => program.populate('author').populate('schedule.exercises.exercise').execPopulate())
+        .then(program => {
+            res.json(program.serialize())
+            // console.log('logged serialized program: ', program.serialize())
+        })
 });
 
 router.post('/', jwtAuth, jsonParser, (req, res) => {
@@ -101,6 +106,15 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
                 return res.status(400).send(message);
             }
 
+            const validTypes = ['sets & reps', 'reps & time', 'reps & distance', 'distance & time', 'reps', 'distance', 'time'];
+            if (exerciseList[j].type) {
+                if (!validTypes.includes(exerciseList[j].type)) {
+                    const message = 'Invalid Type of Exercise';
+                    console.error(message);
+                    return res.status(400).send(message);
+                }
+            }
+
             const lengthUnits = ['m', 'km', 'mi', 'ft'];
             if (exerciseList[j].unitLength) {
                 if (!lengthUnits.includes(exerciseList[j].unitLength.toLowerCase())) {
@@ -110,7 +124,7 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
                 }
             }
 
-            const timeUnits = ['m', 'hr', 's'];
+            const timeUnits = ['min', 'hr', 's'];
             if (exerciseList[j].unitTime) {
                 if (!timeUnits.includes(exerciseList[j].unitTime.toLowerCase())) {
                     const message = 'Invalid unit of time';
@@ -124,6 +138,7 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
         }
     }
 
+    // console.log('req.user.id: ', req.user.id)
     Program
         .create({
             programName: req.body.programName,
@@ -131,6 +146,9 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
             categories: req.body.categories,
             schedule: req.body.schedule
         })
+        .then(program => program.populate('author').execPopulate())
+        // .populate('author')
+        // .then(program => console.log('program: ', program))
         .then(program => res.status(201).json(program.serialize()))
         .catch(err => {
             console.error(err);
@@ -154,8 +172,7 @@ router.put('/:id', jwtAuth, jsonParser, (req, res) => {
             return res.status(400).send(message);
         }
     }
-
-
+    
     const edited = {};
     const editableFields = ['programName', 'categories']
     editableFields.forEach(field => {
@@ -177,6 +194,8 @@ router.put('/:id/schedule/:schedule_id', jsonParser, (req, res) => {
             error: 'Request path id and request body id values must match'
         });
     }
+
+    console.log(req.body)
 
     const scheduleId = req.params.schedule_id;
     const attr = `schedule.${scheduleId}.name`;
@@ -209,7 +228,7 @@ router.put('/:id/schedule/:schedule_id/exercises/:exercise_id', jsonParser, (req
     const location = `schedule.${scheduleId}.exercises.${exerciseId}`;
 
     const reqObj = {};
-    const editableFields = ['exercise', 'sets', 'reps', 'distance', 'unitLength', 'time', 'unitTime', 'comments'];
+    const editableFields = ['exercise', 'sets', 'reps', 'distance', 'unitLength', 'time', 'unitTime', 'comments', 'type'];
 
     editableFields.forEach(field => {
         if (field in req.body) {

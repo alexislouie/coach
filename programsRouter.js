@@ -19,7 +19,7 @@ router.get('/', jwtAuth, (req, res) => {
     const queryableFields = ['id', 'programName', 'author', 'categories'];
     queryableFields.forEach(field => {
         if (req.query[field]) {
-            filters[field] = req.query[field];
+            filters[field] = new RegExp(req.query[field], 'i');
         }
     });
 

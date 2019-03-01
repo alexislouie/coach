@@ -1,94 +1,161 @@
 const bearer = localStorage.getItem('authToken');
 const id = localStorage.getItem('userId');
 
+if (!bearer) {
+    $('main').html(`
+        <div class="unauthorized">
+            <b>ERROR 404</b> unauthorized<br />
+            <span class="login">Please <a href="/login.html">log in to view</a></span>
+        </div>
+    `);
+}
+
 function addProgLength() {
     $('body').on('click', '.js-add-progLength', function (event) {
         event.preventDefault();
-        $('.js-add-progLength').prop('hidden', true);
-        const programLength = $('.programLength').val();
+        $('.js-add-program-length').hide();
+        const dayCount = $('.programLength').val();
         $('.js-add-program-form').append(`
             <br />
             <br />
             Schedule:
         `);
 
-        if (programLength == 1) {
-            $('.js-add-program-form').append(`
-                <div class="day">
-                    <div class="exercises">
-                        <div class="exercise">
-                            <label for="exercise-name">Exercise Name:</label>
-                            <input type="text" class="exercise-name">
-                            <br /> 
+        let html = ''
+        for (let i = 0; i < dayCount; i++) {
+            html += dayCount > 1 ? renderMultiDay(i + 1) : renderSingleDay()
+        }
+        $('.js-add-program-form').append(html);
 
-                            <label for="exercise-type">Exercise Type:</label>
-                            <select name="exercise-type" class="exercise-type">
-                                <option disabled selected value>-- select option --</option>
-                                <option value="sets-reps">sets & reps</option>
-                                <option value="reps-time">reps & time</option>
-                                <option value="reps-distance">reps & distance</option>
-                                <option value="distance-time">distance & time</option>
-                                <option value="reps">reps</option>
-                                <option value="distance">distance</option>
-                                <option value="time">time</option>
-                            </select>
-                            <br />
-
-                            <button class="js-remove-exercise">Remove this Exercise</button>
-                        </div>
-                    </div>
+        function renderSingleDay() {
+            return `
+            <div class="day">
+                <div class="exercises">
+                    <button class="js-add-exercise">Add Exercise</button>
                 </div>
-                <button class="js-add-exercise">Add Another Exercise</button>
-            `);
+            </div>
+          `
         }
-        else {
-            for (let i = 0; i < programLength; i++) {
-                $('.js-add-program-form').append(`
-                    <br />
-                    <div class="day">
-                        <label for="name">Name:</label>
-                        <input type="text" class="name" placeholder="e.g. Day 1: Legs">
-                        <br />
-                        <div class="exercises">
-                            <button class="js-add-prog-exercise">Add Exercise</button>
-                        </div>
-                    </div>
-                `)
-            }
+
+        function renderMultiDay(day) {
+            return `
+            <fieldset>
+              <legend>Day ${day}</legend>
+              <div class="day">
+                  <label for="name">Name:</label>
+                  <input type="text" class="name" placeholder="e.g. Day 1: Legs" required>
+                  <br />
+                  <div class="exercises">
+                      <button class="js-add-exercise multiday">Add Exercise</button>
+                  </div>
+              </div>
+            </fieldset>
+          `
         }
+
         $('.js-add-program-form').append(`
             <br />
             <button type=submit class="js-save-program">Save Program</button>
         `)
 
+        addExercise();
+        $('.js-add-exercise').trigger('click');
+
+        removeExercise();
+    })
+}
+
+function addExercise() {
+    let count = 0;
+
+    function newExercise() {
+        return `
+        <div class="exercise">
+            <label>Exercise Name:</label>
+            <input type="text" class="exercise-name" id="exercise-${++count}" required>
+            <br /> 
+
+            <label>Exercise Type:</label>
+            <select name="exercise-type" class="exercise-type" required>
+                <option disabled selected value>-- select option --</option>
+                <option value="sets-reps">sets & reps</option>
+                <option value="reps-time">reps & time</option>
+                <option value="reps-distance">reps & distance</option>
+                <option value="distance-time">distance & time</option>
+                <option value="reps">reps</option>
+                <option value="distance">distance</option>
+                <option value="time">time</option>
+            </select>
+            <br />
+
+            <button class="js-remove-exercise">Remove this Exercise</button>
+        </div>
+      `
+    }
+
+    $('body').on('click', '.js-add-exercise', function (event) {
+        event.preventDefault();
+        const newHtml = newExercise()
+        const inputId = $(newHtml).find('input').attr('id')
+
+        $(this).before(newHtml);
+
         const exerciseOptions = {
-            url: function(phrase) {
-                return '/exercises/list'
-            },
-            getValue: function(element) {
+            url: '/exercises/list',
+            getValue: function (element) {
                 return element.name;
             },
             ajaxSettings: {
                 dataType: "json",
                 method: "POST",
                 headers: {
-                    'Authorization':`Bearer ${bearer}`
+                    'Authorization': `Bearer ${bearer}`
                 },
                 data: {
-                  dataType: "json"
+                    dataType: "json",
                 },
+                contentType: "application/json"
             },
-            preparePostData: function(data) {
-                data.name = $('.exercise-name').val().trim();
-                return data;
+            preparePostData: function (data) {
+                data.name = $(`#${inputId}`).val().trim();
+                return JSON.stringify(data);
             },
-            requestDelay: 300
+            requestDelay: 300,
+            list: {
+                onChooseEvent: function () {
+                    const value = $(`#${inputId}`).getSelectedItemData()._id;
+                    $(`#${inputId}`).attr('data-exercise-id', value);
+                }
+            }
         };
-        $('.exercise-name').easyAutocomplete(exerciseOptions);
 
-        addExercise();
-        removeExercise();
-    })
+        $(`#${inputId}`).easyAutocomplete(exerciseOptions)
+        $(`#${inputId}`).on('blur', function (event) {
+            const exerciseName = $(`#${inputId}`).val().trim();
+            if (!exerciseName.length) {
+                $(`#${inputId}`).val('');
+            }
+            fetch('http://localhost:8080/exercises',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${bearer}`
+                },
+                body: JSON.stringify({ 'name': exerciseName })
+            })
+            .then(data => data.json())
+            .then(console.log)
+        })
+    });
+    
+}
+
+function removeExercise() {
+    $('.js-add-program-form').on('click', '.js-remove-exercise', function (event) {
+        event.preventDefault();
+        $(this).parent().remove();
+    });
 }
 
 $('main').on('change', '.exercise-type', function (event) {
@@ -137,22 +204,22 @@ function addExerciseDetails(menu, type) {
 function getSetsReps() {
     return `<br />
         <label for="sets">Sets:</label>
-        <input type="number" min="0" max="100" class="sets"><br /> 
+        <input type="number" min="0" max="100" class="sets" required><br /> 
 
         <label for="reps">Reps:</label>
-        <input type="number" min="0" max="999" class="reps"><br />
+        <input type="number" min="0" max="999" class="reps" required><br />
     `
 }
 
 function getRepsTime() {
     return `<br />
         <label for="reps">Reps:</label>
-        <input type="number" min="0" max="999" class="reps"><br /> 
+        <input type="number" min="0" max="999" class="reps" required><br /> 
 
         <label for="time">Time:</label>
-        <input type="number" min="0" max="999" class="time">
+        <input type="number" min="0" max="999" class="time" required>
 
-        <select name="unitTime" class="unitTime">
+        <select name="unitTime" class="unitTime" required>
             <option value="min">min</option>
             <option value="hr">hr</option>
             <option value="s">s</option>
@@ -163,12 +230,12 @@ function getRepsTime() {
 function getRepsDistance() {
     return `<br />
         <label for="reps">Reps:</label>
-        <input type="number" min="0" max="999" class="reps"><br /> 
+        <input type="number" min="0" max="999" class="reps" required><br /> 
 
         <label for="dist">Distance:</label>
-        <input type="number" min="0" class="distance">
+        <input type="number" min="0" class="distance" required>
 
-        <select name="unitLength" class="unitLength">
+        <select name="unitLength" class="unitLength" required>
             <option value="m">m</option>
             <option value="km">km</option>
             <option value="ft">ft</option>
@@ -180,9 +247,9 @@ function getRepsDistance() {
 function getDistanceTime() {
     return `<br />
         <label for="dist">Distance:</label>
-        <input type="number" min="0" class="distance">
+        <input type="number" min="0" class="distance" required>
 
-        <select name="unitLength" class="unitLength">
+        <select name="unitLength" class="unitLength" required>
             <option value="m">m</option>
             <option value="km">km</option>
             <option value="ft">ft</option>
@@ -190,9 +257,9 @@ function getDistanceTime() {
         </select><br /> 
 
         <label for="time">Time:</label>
-        <input type="number" min="0" max="999" class="time">
+        <input type="number" min="0" max="999" class="time" required>
 
-        <select name="unitTime" class="unitTime">
+        <select name="unitTime" class="unitTime" required>
             <option value="min">min</option>
             <option value="hr">hr</option>
             <option value="s">s</option>
@@ -203,16 +270,16 @@ function getDistanceTime() {
 function getReps() {
     return `<br />
         <label for="reps">Reps:</label>
-        <input type="number" min="0" max="999" class="reps"><br /> 
+        <input type="number" min="0" max="999" class="reps" required><br /> 
     `
 }
 
 function getDistance() {
     return `<br />
         <label for="dist">Distance:</label>
-        <input type="number" min="0" class="distance">
+        <input type="number" min="0" class="distance" required>
 
-        <select name="unitLength" class="unitLength">
+        <select name="unitLength" class="unitLength" required>
             <option value="m">m</option>
             <option value="km">km</option>
             <option value="ft">ft</option>
@@ -224,9 +291,9 @@ function getDistance() {
 function getTime() {
     return `<br />
         <label for="time">Time:</label>
-        <input type="number" min="0" max="999" class="time">
+        <input type="number" min="0" max="999" class="time" required>
 
-        <select name="unitTime" class="unitTime">
+        <select name="unitTime" class="unitTime" required>
             <option value="min">min</option>
             <option value="hr">hr</option>
             <option value="s">s</option>
@@ -244,6 +311,8 @@ function createProgramObj() {
         programObj['schedule'] = createSchedule();
 
         console.log('programObj: ', programObj)
+        // runValidation(programObj);
+        // saveProgram(programObj);
     })
 }
 
@@ -269,10 +338,11 @@ function createExercises(day) {
 
     $(exercises).each(function (index, exercise) {
         const exerciseObj = {};
-        const name = $(exercise).find('.exercise-name').first().val();
+        let exerciseId = $(exercise).find('div > .exercise-name').data('exercise-id');
+        const name = $(exercise).find('div > .exercise-name').first().val();
         const type = $(exercise).find('.exercise-type').first().val();
-        const comments = $(exercise).find('.comments').first().val();
         const descriptors = type.split('-');
+        const comments = $(exercise).find('.comments').first().val();
 
         if (descriptors.includes('time')) {
             const unitTime = $(exercise).find('.unitTime').first().val();
@@ -281,10 +351,10 @@ function createExercises(day) {
         if (descriptors.includes('distance')) {
             const unitLength = $(exercise).find('.unitLength').first().val();
             exerciseObj['unitLength'] = unitLength;
-
         }
 
         exerciseObj['name'] = name;
+        exerciseObj['exercise'] = exerciseId;
         exerciseObj['type'] = type;
 
         exerciseObj[`${descriptors[0]}`] = $(exercise).find(`.${descriptors[0]}`).first().val();
@@ -293,103 +363,106 @@ function createExercises(day) {
         }
         exerciseObj['comments'] = comments;
 
+        console.log('exerciseObj: ', exerciseObj)
+
         exercisesArray.push(exerciseObj);
-    })
+    });
 
     return exercisesArray;
 }
 
-function addExercise() {
-    const newExercise = `
-        <div class="exercise">
-            <label for="exercise-name">Exercise Name:</label>
-            <input type="text" class="exercise-name">
-            <br /> 
-
-            <label for="exercise-type">Exercise Type:</label>
-            <select name="exercise-type" class="exercise-type">
-                <option disabled selected value>-- select option --</option>
-                <option value="sets-reps">sets & reps</option>
-                <option value="reps-time">reps & time</option>
-                <option value="reps-distance">reps & distance</option>
-                <option value="distance-time">distance & time</option>
-                <option value="reps">reps</option>
-                <option value="distance">distance</option>
-                <option value="time">time</option>
-            </select>
-            <br />
-
-            <button class="js-remove-exercise">Remove this Exercise</button>
-        </div>
-    `
-
-    $('body').on('click', '.js-add-exercise', function (event) {
-        event.preventDefault();
-        $('.exercises').append(newExercise);
-        const exerciseOptions = {
-            url: function(phrase) {
-                return '/exercises/list'
-            },
-            getValue: function(element) {
-                return element.name;
-            },
-            ajaxSettings: {
-                dataType: "json",
-                method: "POST",
+function runValidation(program) {
+    console.log(program.schedule)
+    if (!exerciseObj.exercise) {
+        const name = $(exercise).find('div > .exercise-name').first().val();
+        fetch(`http://localhost:8080/exercises?name=${name}`,
+            {
+                method: 'GET',
                 headers: {
-                    'Authorization':`Bearer ${bearer}`
-                },
-                data: {
-                  dataType: "json"
-                },
-            },
-            preparePostData: function(data) {
-                data.name = $('.exercise-name').val().trim();
-                return data;
-            },
-            requestDelay: 300
-        };
-        $('.exercise-name').easyAutocomplete(exerciseOptions);
-    });
+                    'Authorization': `Bearer ${bearer}`
+                }
+            })
+            .then(res => {
+                if (res.ok) {
+                    return res.json();
+                }
+                else {
+                    throw Error(`Request rejected with status ${res.status}`);
+                }
+            })
+            .then(exercise => {
+                console.log('exercise ', exercise)
+                if (exercise.length > 0) {
+                    exerciseObj['exercise'] = exercise[0].id;
+                }
+                else {
+                    fetch(`/exercises`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${bearer}`
+                            },
+                            body: JSON.stringify({ 'name': name })
+                        })
+                        .then(res => {
+                            if (res.ok) {
+                                return res.json()
+                            }
+                            else {
+                                throw Error(`Request rejected with status ${res.status}`);
+                            }
+                        })
+                        .then(exercise => {
+                            exerciseObj['exercise'] = exercise.id;
+                            console.log(exercise)
+                        })
+                }
+            })
 
-    $('body').on('click', '.js-add-prog-exercise', function (event) {
-        event.preventDefault();
-        $(this).before(newExercise);
-        const exerciseOptions = {
-            url: function(phrase) {
-                return '/exercises/list'
-            },
-            getValue: function(element) {
-                return element.name;
-            },
-            ajaxSettings: {
-                dataType: "json",
-                method: "POST",
-                headers: {
-                    'Authorization':`Bearer ${bearer}`
-                },
-                data: {
-                  dataType: "json"
-                },
-            },
-            preparePostData: function(data) {
-                data.name = $('.exercise-name').val().trim();
-                return data;
-            },
-            requestDelay: 300
-        };
-        $('.exercise-name').easyAutocomplete(exerciseOptions);
-    });
+        // fetch(`/exercises`,
+        //     {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             'Authorization': `Bearer ${bearer}`
+        //         },
+        //         body: JSON.stringify({ 'name': name })
+        //     })
+        //     .then(res => {
+        //         if (res.ok) {
+        //             return res.json()
+        //         }
+        //         else {
+        //             throw Error(`Request rejected with status ${res.status}`);
+        //         }
+        //     })
+        //     .then(exercise => {
+        //         exerciseObj['exercise'] = exercise.id;
+        //     })
+    }
 }
 
-function removeExercise() {
-    $('.js-add-program-form').on('click', '.js-remove-exercise', function (event) {
-        event.preventDefault();
-        $(this).parent().remove();
-    });
-}
+// function saveProgram(program) {
 
+// fetch(`/programs/`,
+//     {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'Authorization': `Bearer ${bearer}`
+//         }, 
+//         body: JSON.stringify(program)
+//     })
+//     .then(res => {
+//         if (res.ok) {
+//             return window.location.replace('/profile.html');
+//         }
+//         else {
+//             throw Error(`Request rejected with status ${res.status}`);
+//         }
+//     })
+// }
 
-// $(addProgram);
 addProgLength();
 createProgramObj();

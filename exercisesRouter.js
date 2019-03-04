@@ -52,19 +52,6 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
                 });
             }
         })
-
-
-    // Exercise
-    //     .create({ name: req.body.name.trim() })
-    //     .then(exercise => {
-    //         const id = exercise._id.toString();
-    //         const name = exercise.name;
-    //         res.status(201).json({ name: name, id: id})
-    //     })
-    //     .catch(err => {
-    //         console.error(err);
-    //         res.status(500).json({ error: 'Internal Server Error' });
-    //     });
 })
 
 router.post('/list', jwtAuth, jsonParser, (req, res) => {

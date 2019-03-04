@@ -29,7 +29,9 @@ function createUser(info) {
                 throw Error(`Request rejected with status ${res.status}`);
             }
         })
-        .then(console.log)
+        .then(res => {
+            return window.location.replace('/login.html');
+        })
 }
 
 handleSignUp();

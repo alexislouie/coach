@@ -1,6 +1,8 @@
 const bearer = localStorage.getItem('authToken');
 const id = localStorage.getItem('userId');
 
+let alertArr = [];
+
 if (!bearer) {
     $('main').html(`
         <div class="unauthorized">
@@ -136,19 +138,21 @@ function addExercise() {
                 $(`#${inputId}`).val('');
             }
             fetch('http://localhost:8080/exercises',
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${bearer}`
-                },
-                body: JSON.stringify({ 'name': exerciseName })
-            })
-            .then(data => data.json())
-            .then(console.log)
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${bearer}`
+                    },
+                    body: JSON.stringify({ 'name': exerciseName })
+                })
+                .then(data => data.json())
+                .then(exercise => {
+                    $(`#${inputId}`).attr('data-exercise-id', exercise.id)
+                })
         })
     });
-    
+
 }
 
 function removeExercise() {
@@ -304,15 +308,41 @@ function getTime() {
 function createProgramObj() {
     $('main').on('click', '.js-save-program', function (event) {
         event.preventDefault();
+        alertArr = []
 
         const programObj = {};
-        programObj['programName'] = $('.programName').val();
-        programObj['categories'] = $('.categories').val();
+        const programName = $('.programName').val();
+        if (!programName || programName.trim().length === 0) {
+            alertArr.push('program name')
+            // $('.programName').after(`<br/ ><span style="color: red font-size: 10px"><i>Please enter valid program length</i></span>`)
+        } else {
+            programObj['programName'] = programName.trim();
+        }
+
+        const categories = $('.categories').val();
+        if (!categories.length) {
+            alertArr.push('at least one category')
+            // $('.programName').after(`<br/ ><span style="color: red font-size: 10px"><i>Please enter valid program length</i></span>`)
+        } else {
+            programObj['categories'] = categories;
+        }
+
         programObj['schedule'] = createSchedule();
 
-        console.log('programObj: ', programObj)
-        // runValidation(programObj);
-        // saveProgram(programObj);
+        
+        let uniqueAlert = []
+        uniqueAlert = [...new Set(alertArr)];
+        if (uniqueAlert.length) {
+            $('.errors').remove();
+            $('main').prepend(`<div class="errors">Please include the following details:</div>`)
+
+            uniqueAlert.forEach(a => {
+                $('.errors').append(`<li>${a}</li>`)
+            })
+        } else {
+            console.log('programObj: ', programObj)
+        }
+
     })
 }
 
@@ -320,9 +350,13 @@ function createSchedule() {
     const schedule = [];
     $('.day').each(function (index, day) {
         const dayObj = {};
-        if ($('div').hasClass('name')) {
-            const name = $(day).find('.name').first().val();
-            dayObj['name'] = name;
+        if ($('.day > input').hasClass('name')) {
+            const dayName = $(day).find('.name').first().val();
+            if (!dayName || dayName.trim().length === 0) {
+                alertArr.push('a name for each day in your program schedule')
+            } else {
+                dayObj['name'] = dayName;
+            }
         }
 
         dayObj['exercises'] = createExercises(day);
@@ -338,109 +372,56 @@ function createExercises(day) {
 
     $(exercises).each(function (index, exercise) {
         const exerciseObj = {};
-        let exerciseId = $(exercise).find('div > .exercise-name').data('exercise-id');
-        const name = $(exercise).find('div > .exercise-name').first().val();
-        const type = $(exercise).find('.exercise-type').first().val();
-        const descriptors = type.split('-');
-        const comments = $(exercise).find('.comments').first().val();
-
-        if (descriptors.includes('time')) {
-            const unitTime = $(exercise).find('.unitTime').first().val();
-            exerciseObj['unitTime'] = unitTime;
-        }
-        if (descriptors.includes('distance')) {
-            const unitLength = $(exercise).find('.unitLength').first().val();
-            exerciseObj['unitLength'] = unitLength;
-        }
-
-        exerciseObj['name'] = name;
+        const exerciseId = $(exercise).find('div > .exercise-name').data('exercise-id');
         exerciseObj['exercise'] = exerciseId;
-        exerciseObj['type'] = type;
 
-        exerciseObj[`${descriptors[0]}`] = $(exercise).find(`.${descriptors[0]}`).first().val();
-        if (descriptors[1]) {
-            exerciseObj[`${descriptors[1]}`] = $(exercise).find(`.${descriptors[1]}`).first().val();
+        const exerciseName = $(exercise).find('div > .exercise-name').first().val();
+        if (!exerciseName || exerciseName.trim().length === 0) {
+            alertArr.push('a name for each exercise');
+        } else {
+            exerciseObj['name'] = exerciseName;
         }
-        exerciseObj['comments'] = comments;
 
-        console.log('exerciseObj: ', exerciseObj)
+        const type = $(exercise).find('.exercise-type').first().val();
+        if (!type) {
+            alertArr.push('an exercise type for each exercise')
+        } else {
+            exerciseObj['type'] = type;
 
+            const typeDescriptors = type.split('-');
+            const firstTypeDescrip = $(exercise).find(`.${typeDescriptors[0]}`).first().val();
+            if (firstTypeDescrip && firstTypeDescrip.trim().length > 0 && firstTypeDescrip > 0) {
+                exerciseObj[`${typeDescriptors[0]}`] = $(exercise).find(`.${typeDescriptors[0]}`).first().val();
+            } else {
+                alertArr.push(`a valid number for ${typeDescriptors[0]}`);
+            }
+
+            const secondTypeDescrip = $(exercise).find(`.${typeDescriptors[1]}`).first().val();
+            if (secondTypeDescrip && secondTypeDescrip.trim().length > 0 && secondTypeDescrip > 0) {
+                exerciseObj[`${typeDescriptors[1]}`] = $(exercise).find(`.${typeDescriptors[1]}`).first().val();
+            } else {
+                alertArr.push(`a valid number for ${typeDescriptors[1]}`);
+            }
+            if (typeDescriptors.includes('time')) {
+                const unitTime = $(exercise).find('.unitTime').first().val();
+                exerciseObj['unitTime'] = unitTime;
+            }
+            if (typeDescriptors.includes('distance')) {
+                const unitLength = $(exercise).find('.unitLength').first().val();
+                exerciseObj['unitLength'] = unitLength;
+            }
+        }
+
+        const comments = $(exercise).find('.comments').first().val();
+        if (comments && comments.trim().length > 0) {
+            exerciseObj['comments'] = comments.trim();
+        }
+
+        console.log('exerciseObj: ', exerciseObj);
         exercisesArray.push(exerciseObj);
     });
 
     return exercisesArray;
-}
-
-function runValidation(program) {
-    console.log(program.schedule)
-    if (!exerciseObj.exercise) {
-        const name = $(exercise).find('div > .exercise-name').first().val();
-        fetch(`http://localhost:8080/exercises?name=${name}`,
-            {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${bearer}`
-                }
-            })
-            .then(res => {
-                if (res.ok) {
-                    return res.json();
-                }
-                else {
-                    throw Error(`Request rejected with status ${res.status}`);
-                }
-            })
-            .then(exercise => {
-                console.log('exercise ', exercise)
-                if (exercise.length > 0) {
-                    exerciseObj['exercise'] = exercise[0].id;
-                }
-                else {
-                    fetch(`/exercises`,
-                        {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${bearer}`
-                            },
-                            body: JSON.stringify({ 'name': name })
-                        })
-                        .then(res => {
-                            if (res.ok) {
-                                return res.json()
-                            }
-                            else {
-                                throw Error(`Request rejected with status ${res.status}`);
-                            }
-                        })
-                        .then(exercise => {
-                            exerciseObj['exercise'] = exercise.id;
-                            console.log(exercise)
-                        })
-                }
-            })
-
-        // fetch(`/exercises`,
-        //     {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //             'Authorization': `Bearer ${bearer}`
-        //         },
-        //         body: JSON.stringify({ 'name': name })
-        //     })
-        //     .then(res => {
-        //         if (res.ok) {
-        //             return res.json()
-        //         }
-        //         else {
-        //             throw Error(`Request rejected with status ${res.status}`);
-        //         }
-        //     })
-        //     .then(exercise => {
-        //         exerciseObj['exercise'] = exercise.id;
-        //     })
-    }
 }
 
 // function saveProgram(program) {

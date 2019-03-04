@@ -300,9 +300,10 @@ function toggleProgramDisplay() {
         $(this).parent().siblings('form').toggleClass('editable');
 
         if ($(programDetails).hasClass('hidden')) {
-            console.log('true')
-            $(this).parent().siblings('form').children('input').toggleClass('view').attr('readonly','readonly');
-            $(this).siblings('.js-saveEdit-button').remove();
+            if(!($(this).parent().siblings('form').children('input').hasClass('view'))) {
+                $(this).parent().siblings('form').children('input').toggleClass('view').attr('readonly','readonly');
+                $(this).siblings('.js-saveEdit-button').remove();
+            }
         }
     })
 }
@@ -330,7 +331,6 @@ function editExercise() {
         if (unitTimeInput) {
             unitTimeInput.replaceWith(`
                 <select name="unitTime" class="unitTime">
-                    <option disabled selected value="${unitTimeInput.val()}">${unitTimeInput.val()}</option>
                     <option value="min">min</option>
                     <option value="hr">hr</option>
                     <option value="s">s</option>
@@ -342,7 +342,6 @@ function editExercise() {
         if (unitLengthInput) {
             unitLengthInput.replaceWith(`
                 <select name="unitLength" class="unitLength">
-                    <option disabled selected value=>${unitLengthInput.val()}</option>
                     <option value="m">m</option>
                     <option value="km">km</option>
                     <option value="ft">ft</option>
@@ -392,27 +391,8 @@ function editProgram() {
 
     })
 
-
-    // $(document).on('click', function(event){
-    //     if ($('input').not('.view')) {
-    //         $('input').attr('readonly', 'readonly')
-    //         $('input').toggleClass('view');
-    //         $('input').siblings('.js-saveEdit-button').remove();
-    //     }
-    // })
-
 }
 
-function cancelEdit() {
-    $('main').on('click', '.js-cancelEdit-button', function (event) {
-        event.preventDefault();
-        $(this).siblings('input').addClass('view').attr('readonly', 'readonly');
-        $(this).siblings('select.unitTime').replaceWith(`<input type="text" class="exerciseDetails view unitTime" value="${$(this).siblings('select.unitTime').val()}" readonly></input>`)
-        // $(this).parent('form').remove('button');
-    })
-}
-
-// $(function handleEditButton() {
 $('body').on('click', '.js-saveEdit-button', function (event) {
     event.preventDefault();
 
@@ -437,7 +417,6 @@ $('body').on('click', '.js-saveEdit-button', function (event) {
             .then(res => {
                 if (res.ok) {
                     $(this).siblings('.categories').replaceWith(`<span class="editable categories">${newCategories.join(', ')}</span>`);
-                    // $(this).siblings('button').remove();
                     $(this).remove();
                 }
                 else {
@@ -498,7 +477,6 @@ $('body').on('click', '.js-saveEdit-button', function (event) {
             .then(res => {
                 if (res.ok) {
                     $(this).siblings('input').toggleClass('view').attr('readonly', 'readonly');
-                    // $(this).siblings('button').remove();
                     $(this).remove();
                 }
                 else {
@@ -584,7 +562,6 @@ $('body').on('click', '.js-saveEdit-button', function (event) {
             })
     }
 })
-// })
 
 
 displayProfile();
@@ -592,4 +569,3 @@ handleFetchButton();
 toggleProgramDisplay();
 editProgram();
 editExercise();
-cancelEdit();

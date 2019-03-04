@@ -8,11 +8,6 @@ const jwtAuth = passport.authenticate('jwt', { session: false });
 
 const { Program, User } = require('./models');
 
-// user GET request to get user's programs
-// router.get('/', (req, res) => {
-
-// })
-
 // when searching
 router.get('/', jwtAuth, (req, res) => {
     const filters = {};
@@ -134,6 +129,34 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
             }
 
             // validates sets, reps, distance, and time are numbers
+            if (exerciseList[j].sets) {
+                if (!(typeof exerciseList[j].sets === 'number')) {
+                    const message = 'Sets must be a number';
+                    console.error(message);
+                    return res.status(400).send(message);
+                }
+            }
+            if (exerciseList[j].reps) {
+                if (!(typeof exerciseList[j].reps === 'number')) {
+                    const message = 'Reps must be a number';
+                    console.error(message);
+                    return res.status(400).send(message);
+                }
+            }
+            if (exerciseList[j].distance) {
+                if (!(typeof exerciseList[j].distance === 'number')) {
+                    const message = 'Distance must be a number';
+                    console.error(message);
+                    return res.status(400).send(message);
+                }
+            }
+            if (exerciseList[j].time) {
+                if (!(typeof exerciseList[j].time === 'number')) {
+                    const message = 'Time must be a number';
+                    console.error(message);
+                    return res.status(400).send(message);
+                }
+            }
 
         }
     }

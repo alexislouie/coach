@@ -1,18 +1,27 @@
 const bearer = localStorage.getItem('authToken');
 const id = localStorage.getItem('userId');
 
+if (!bearer) {
+    $('main').html(`
+        <div class="unauthorized">
+            <b>ERROR 404</b> unauthorized<br />
+            <span class="login">Please <a href="/login.html">log in to view</a></span>
+        </div>
+    `);
+}
 
-$('main').on('click', '.js-search-button', function(event) {
+$('main').on('click', '.js-search-button', function (event) {
     event.preventDefault();
     const searchCat = $(this).siblings('select').val();
     const q = $(this).siblings('.searchbox').val();
 
-    fetch(`http://localhost:8080/programs?${searchCat}=${q}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${bearer}`
-        }
-    })
+    fetch(`http://localhost:8080/programs?${searchCat}=${q}`, 
+        {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${bearer}`
+            }
+        })
         .then(res => {
             if (res.ok) {
                 return res.json();
@@ -54,17 +63,12 @@ function displayPrograms(program) {
 }
 
 function addSaveButton(programId) {
-    // check if program is in user's savedProgram array, if it isn't, 
-        // add a button that says 'save'
-        // else add a button that says 'unsave' 
-        // These button should toggle between one another
-
-        fetch(`http://localhost:8080/users/${id}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${bearer}`
-            }
-        })
+    fetch(`http://localhost:8080/users/${id}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${bearer}`
+        }
+    })
         .then(res => {
             if (res.ok) {
                 return res.json();
@@ -79,17 +83,15 @@ function addSaveButton(programId) {
             let html;
             if (savedPrograms.includes(programId)) {
                 html = `<button class="js-unsave-button" data-program-id="${programId}">unsave</button>`;
-                // $(`.program[data-program-id="${programId}"]`).closest('nav').append(`<button class="js-unsave-button">unsave</button>`)
             }
             else {
                 html = `<button class="js-save-button" data-program-id="${programId}">save</button>`;
-                // $(`.program[data-program-id="${programId}"]`).closest('nav').append(`<button class="js-save-button">save</button>`)
             }
             $(`.program[data-program-id="${programId}"]`).find('nav').append(html)
         })
 }
 
-$('main').on('click', '.js-save-button', function(event) {
+$('main').on('click', '.js-save-button', function (event) {
     const programId = $(this).attr('data-program-id');
     const obj = {
         op: 'add',
@@ -97,14 +99,14 @@ $('main').on('click', '.js-save-button', function(event) {
     };
     obj['value'] = programId;
     console.log(obj)
-   
+
     fetch(`/users/${id}`,
         {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${bearer}`
-            }, 
+            },
             body: JSON.stringify(obj)
         })
         .then(res => {
@@ -118,7 +120,7 @@ $('main').on('click', '.js-save-button', function(event) {
         })
 })
 
-$('main').on('click', '.js-unsave-button', function(event) {
+$('main').on('click', '.js-unsave-button', function (event) {
     const programId = $(this).attr('data-program-id');
     const obj = {
         op: 'remove',
@@ -134,7 +136,7 @@ $('main').on('click', '.js-unsave-button', function(event) {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${bearer}`
-            }, 
+            },
             body: JSON.stringify(obj)
         })
         .then(res => {
@@ -153,11 +155,10 @@ function handleFetchButton() {
     $('main').on('click', '.js-fetch-program', function (event) {
         event.preventDefault();
         $(this).prop('hidden', true);
-        // $(this).parent().siblings('form').toggleClass('editable');
 
         const programId = $(this).closest('.program').data('program-id');
         $(this).closest('.program-buttons').prepend(`<button class="js-show-program" data-program-id="${programId}">toggle</button>`);
-        
+
         fetchProgram(programId);
     })
 }
@@ -185,11 +186,6 @@ function fetchProgram(id) {
 function appendProgramDetailsForm(program) {
     const categories = program.categories.join(', ');
 
-    // put all user programs stuff in this and toggle the 'editable' class 
-    // if (location === '.js-user-programs') {
-    //     $(location).find(`.program[data-program-id="${program.id}"].programName`).toggleClass('editable');
-    // }
-
     $('.js-search-results').find(`.program[data-program-id="${program.id}"]`).append(`
         <div class="program-details" data-program-id="${program.id}">
             Categories: 
@@ -203,7 +199,7 @@ function appendProgramDetailsForm(program) {
 
     for (let i = 0; i < program.schedule.length; i++) {
         const day = program.schedule[i];
-        const dayIndex = i; 
+        const dayIndex = i;
         if (day.name) {
             $(`.program-details[data-program-id="${program.id}"]`).append(`
                 <div class="day" id="${dayIndex}">
@@ -218,7 +214,7 @@ function appendProgramDetailsForm(program) {
 
 function displayScheduleData(id, day, dayIndex) {
     for (let i = 0; i < day.exercises.length; i++) {
-        const exerciseInfoId = `infoId-${i}`; 
+        const exerciseInfoId = `infoId-${i}`;
         const exerciseId = day.exercises[i].exercise._id;
         const exercise = day.exercises[i];
         const type = exercise.type;
@@ -266,9 +262,9 @@ function displayScheduleData(id, day, dayIndex) {
                 html = `${exercise.time} ${exercise.unitTime}`;
                 break;
         }
-        
+
         $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]#${exerciseInfoId}`).append(html);
-        
+
         if (exercise.comments) {
             $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]#${exerciseInfoId}`).append(`
                 <br />Comments: ${exercise.comments}
@@ -278,58 +274,11 @@ function displayScheduleData(id, day, dayIndex) {
 }
 
 
-    $('main').on('click', '.js-show-program', function (event) {
-        event.preventDefault();
-        const programDetails = $(this).closest('div').siblings(`.program-details`);
-        $(programDetails).toggleClass('hidden');
-        // $(this).parent().siblings('form').toggleClass('editable');
-
-        // if (!($(this).parent().siblings('form').hasClass('editable'))) {
-        //     $(this).parent().siblings('form').toggleClass('view');
-        // }
-    })
+$('main').on('click', '.js-show-program', function (event) {
+    event.preventDefault();
+    const programDetails = $(this).closest('div').siblings(`.program-details`);
+    $(programDetails).toggleClass('hidden');
+})
 
 
 handleFetchButton();
-
-
-// function displaySearchResults(data) {
-//     for (program of data) {
-//         const { programName, author, schedule } = program;
-//         $('body').append(`
-//             <h2>${programName}</h2>
-//             by ${author}
-//         `);
-//         for (day of schedule) {
-//             const { exercises } = day;
-//             // if it's a single workout (i.e. not an entire program), this wont exist
-//             if (day.name) {
-//                 $('body').append(`
-//                     <h3>${day.name}</h3>
-//                 `);
-//             }
-//             for (exercise of exercises) {
-//                 for (const prop in exercise) {
-//                     if (prop === "name") {
-//                         $('body').append(
-//                             `<br />
-//                             <b>Exercise</b>: ${exercise[prop]}`
-//                         )
-//                     } else {
-//                         $('body').append(
-//                             `<li>${prop}: ${exercise[prop]}</li>`
-//                         )
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
-// function getAndDisplayProgramData() {
-//     getProgramData(displayProgramData);
-// }
-
-// $(function() {
-//     getAndDisplayProgramData();
-// })

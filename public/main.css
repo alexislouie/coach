@@ -51,6 +51,13 @@ main {
     margin-top: 100px;
 }
 
+.unauthorized {
+    font-size: 20px;
+}
+
+.unauthorized > span {
+    font-size: 12pt;
+}
 .circles-parent {
     text-align: center;
 }
@@ -74,48 +81,6 @@ img {
 h1 {
     font-family: 'Raleway', sans-serif;
     font-weight: 100;
-}
-
-.search-form {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 50%;
-}
-
-.searchbox {
-    border-top: 0;
-    border-left: 0;
-    border-right: 0;
-    border-bottom: solid 2px #686c70;
-    width: 450px;
-}
-
-/******* PROFILE/INDEX PAGE *******/
-
-.lightbox {
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    /* background-color: black; 
-  opacity: 0.7;  */
-    display: none;
-}
-
-.lightbox[data-state='visible'] {
-    display: block;
-}
-
-.lightbox-content {
-    width: 560px;
-    height: 315px;
-    display: block;
-    margin-top: 100px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 /******* SIGN UP PAGE *******/
@@ -147,12 +112,12 @@ legend {
 }
 
 /******* PROFILE PAGE *******/
-.add-program-form {
+/* .add-program-form {
     width: 500px;
-}
+} */
 
 .program {
-    width: 500px;
+    width: 100%;
 }
 
 .day-name {
@@ -171,24 +136,45 @@ legend {
 
 .edit-form {
     display: inline-block;
+    width: 75%
 }
 
+.program-buttons {
+    float: right; 
+    clear: both;
+    width: 25%;
+    /* position: relative;
+    left: 467px;
+    bottom: 43px; */
+}
+button {
+    float: right;
+}
 
 .programHeader {
     background-color: #B0E0E6;
     clear: both;
     height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
+/* .programHeader input {
+    width: 70%;
+}
+.programHeader button {
+    width: 30%;
+} */
+
 h2 {
     display: inline; 
     font-weight: 100;
+    font-size: 16px;
 }
-.program-buttons {
-    float: right; 
-    clear: both;
-    /* position: relative;
-    left: 467px;
-    bottom: 43px; */
+.edit-buttons {
+    /* float: right; 
+    clear: both; */
+    display: inline-block;
 }
 
 .hidden {
@@ -211,9 +197,9 @@ h2 {
 input.programName {
     font-family: sans-serif;
     font-weight: 100;
-    font-size: 16pt;
+    font-size: 16px;
     color: #686c70;
-    width: 400px;
+    /* width: 400px; */
 }
 
 input {
@@ -225,6 +211,11 @@ input {
 
 input.exerciseDetails {
     width: 50px;
+}
+
+input.exerciseComments {
+    display: inline-block;
+    font-style: italic;
 }
 
 /* input.categories {
@@ -240,3 +231,33 @@ input.day-name {
     font-size: 12pt;
     color: #686c70;
 } */
+
+/******* SEARCH PAGE *******/
+.search-form {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}
+
+.searchbox {
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: solid 2px #686c70;
+    width: 450px;
+}
+
+.js-search-results {
+    margin-top: 50px;
+}
+
+.exercise-info {
+    margin-bottom: 10px;
+}
+
+@media screen and (min-width: 480px) {
+    .program {
+        width: 50%;
+    }
+}

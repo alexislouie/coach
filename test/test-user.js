@@ -39,7 +39,6 @@ function seedAuthor() {
         lastName: faker.name.lastName(),
         userName: faker.internet.userName(),
         password: faker.lorem.word() + '12345678',
-        //savedPrograms: []
     })
 }
 
@@ -54,16 +53,19 @@ function generateProgramData(user, exercise) {
                 exercises: [
                     {
                         exercise: mongoose.Types.ObjectId(exercise._id),
+                        type: 'sets & reps',
                         sets: faker.random.number(),
                         reps: faker.random.number(),
                     },
                     {
                         exercise: mongoose.Types.ObjectId(exercise._id),
+                        type: 'distance & time',
                         distance: faker.random.number(),
                         time: faker.random.number(),
                     },
                     {
                         exercise: mongoose.Types.ObjectId(exercise._id),
+                        type: 'sets & time',
                         sets: faker.random.number(),
                         time: faker.random.number(),
                     },

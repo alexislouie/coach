@@ -1,13 +1,21 @@
 const bearer = localStorage.getItem('authToken');
 const id = localStorage.getItem('userId');
 
+if (!bearer) {
+    $('main').html(`
+        <div class="unauthorized">
+            <b>ERROR 404</b> unauthorized<br />
+            <span class="login">Please <a href="/login.html">log in to view</a></span>
+        </div>
+    `);
+}
+
 function displayProfile() {
     fetch(`http://localhost:8080/users/${id}`,
         {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${bearer}`
-
             }
         })
         .then(res => {
@@ -21,25 +29,24 @@ function displayProfile() {
         .then(data => {
             const userPrograms = data.userPrograms;
             const savedPrograms = data.savedPrograms;
-            displayHeader(data.userName);
+
+            displayWelcome(data.userName);
             displayPrograms(userPrograms, savedPrograms);
         })
 }
 
-function displayHeader(userName) {
+function displayWelcome(userName) {
     $('main').prepend(`
         <h1>Welcome Back ${userName}!</h1>
     `);
 }
 
 function displayUserProgramsDefault() {
-    $('.js-user-programs').append(`
-        <div>
-            <span>You haven't created any programs</span>
-            <br /> 
-            <span>Click Here to Add Program</span>
-        </div>
-    `);
+    $('.js-user-programs').append(`<br/><span>You haven't created any programs</span>`);
+}
+
+function displaySavedProgramsDefault() {
+    $('.js-saved-programs').append(`<br /><span>You haven't saved any programs</span>`);
 }
 
 function displayUserPrograms(program) {
@@ -47,10 +54,10 @@ function displayUserPrograms(program) {
         <div class="program" data-program-id="${program._id}">
             <div class="programHeader">
                 <form class="edit-form edit-program-name">
-                    <!-- <h2>${program.programName}</h2>--!>
+                    <!-- <h2>${program.programName}</h2>-->
                     <input type="select" class="programName view" value="${program.programName}" readonly></input>
                 </form>
-                <nav class="program-buttons">
+                <nav class="program-buttons" role="navigation">
                     <button class="js-fetch-program" data-program-id="${program._id}">show</button>
                 </nav>
             </div>
@@ -63,7 +70,7 @@ function displaySavedPrograms(program) {
         <div class="program" data-program-id="${program.id}">
             <div class="programHeader">
                 <h2>${program.programName} by ${program.author}</h2>
-                <nav class="program-buttons">
+                <nav class="program-buttons" role="navigation">
                     <button class="js-show-program" data-program-id="${program.id}">toggle</button>
                 </div>
             </div>
@@ -71,18 +78,9 @@ function displaySavedPrograms(program) {
     `);
 }
 
-function displaySavedProgramsDefault() {
-    $('.js-saved-programs').append(`
-        <div class="programHeader">
-            <span>You haven't saved any programs</span>
-            <br /> 
-            <span>Click here to search our catalog of programs</span>
-        </div>
-    `);
-}
 
 function displayPrograms(userPrograms, savedPrograms) {
-    if (!userPrograms) {
+    if (userPrograms.length === 0) {
         displayUserProgramsDefault();
     }
     else {
@@ -91,7 +89,7 @@ function displayPrograms(userPrograms, savedPrograms) {
         })
     }
 
-    if (!savedPrograms) {
+    if (savedPrograms.length === 0) {
         displaySavedProgramsDefault();
     }
     else {
@@ -170,7 +168,7 @@ function appendProgramDetailsForm(program, location) {
             <span class="editable categories">${categories}</span>
             <!-- <form class="edit-form edit-categories">
                 <input type="select" class="editable categories view" value="${categories}" readonly></input>
-            </form> --!>
+            </form> -->
             <br /> 
             <br /> 
             Schedule:
@@ -286,10 +284,12 @@ function displayScheduleData(id, day, dayIndex) {
         
         if (exercise.comments) {
             $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]#${exerciseInfoId}`).find('form').append(`
-                <br />Comments: <input type="text" class="exerciseComments view" value="${exercise.comments}" readonly></input>
+                <br /><i>Comments:</i> <input type="text" class="exerciseComments view" value="${exercise.comments}" readonly></input>
             `);
         }
     }
+    $('.js-saved-programs').find('.editable').removeClass('editable');
+    $('.js-saved-programs').find('.edit-exercise').removeClass('edit-exercise');
 }
 
 function toggleProgramDisplay() {
@@ -321,25 +321,15 @@ function editExercise() {
         if ($(this).children('form').find('input').attr('readonly') === 'readonly') {
             $(this).children('form').find('input').removeAttr('readonly');
             const programId = $(this).closest('.program-details').attr('data-program-id');
-            // $(this).find('.edit-form').append(`
-            //     <button type="submit" class="js-saveEdit-button" data-program-id="${programId}">save</button>
-            //     <button type="submit" class="js-cancelEdit-button" data-program-id="${programId}">cancel</button> 
-            // `)
             $(this).find('.edit-form').append(addButtons(programId));
             console.log('hehe')
         }
 
-        // if the div has an input with .unitTime 
-        // replace that specific input with select input dropdown thing (use replaceWith())
-        // append select 
-        // when SAVING, set variable to the new selected value 
-        // then REPLACE it with <input type="text" class="exerciseDetails view unitTime" value="${NEWVARIABLENAME}" readonly></input>
-        if ($(this).children('form').find('input.unitTime')) {
-            const unitTime = $(this).children('form').find('input.unitTime').val();
-            const programId = $(this).closest('.program-details').attr('data-program-id');
-
-            $(this).children('form').find('input.unitTime').replaceWith(`
+        const unitTimeInput = $(this).children('form').find('input.unitTime');
+        if (unitTimeInput) {
+            unitTimeInput.replaceWith(`
                 <select name="unitTime" class="unitTime">
+                    <option disabled selected value="${unitTimeInput.val()}">${unitTimeInput.val()}</option>
                     <option value="min">min</option>
                     <option value="hr">hr</option>
                     <option value="s">s</option>
@@ -347,12 +337,11 @@ function editExercise() {
             `)
         }
 
-        if ($(this).children('form').find('input.unitLength')) {
-            const unitLength = $(this).children('form').find('input.unitLength').val();
-            const programId = $(this).closest('.program-details').attr('data-program-id');
-
-            $(this).children('form').find('input.unitLength').replaceWith(`
+        const unitLengthInput = $(this).children('form').find('input.unitLength');
+        if (unitLengthInput) {
+            unitLengthInput.replaceWith(`
                 <select name="unitLength" class="unitLength">
+                    <option disabled selected value=>${unitLengthInput.val()}</option>
                     <option value="m">m</option>
                     <option value="km">km</option>
                     <option value="ft">ft</option>
@@ -360,32 +349,19 @@ function editExercise() {
                 </select>
             `)
         }
-    })
-}
 
-function cancelEdit() {
-    $('main').on('click', '.js-cancelEdit-button', function(event) {
-        event.preventDefault();
-        console.log('cancel edit button clicked')
     })
 }
 
 function editProgram() {
     $('main').on('click', '.editable', function (event) {
         event.preventDefault();
-        // $(this).removeClass('view');
         $(this).children('input').removeClass('view');
 
         if ($(this).children('input').attr('readonly')) {
-        // if ($(this).attr('readonly')) {
-            // $(this).removeAttr('readonly');
             $(this).children('input').removeAttr('readonly');
             const programId = $(this).closest('.program').attr('data-program-id');
             $(this).closest('form').append(addButtons(programId));
-            // $(this).closest('form').append(`
-            //     <button type="submit" class="js-saveEdit-button" data-program-id="${programId}">save</button>
-            //     <button type="submit" class="js-cancelEdit-button" data-program-id="${programId}">cancel</button> 
-            // `)
         }
         if ($(this).hasClass('categories')) {   
             console.log($(this).val())
@@ -393,15 +369,6 @@ function editProgram() {
             $(this).replaceWith(`
                 <form class="edit-form edit-categories">
                     <select class="categories" multiple> 
-                        <!-- <input type="radio" name="category" value="legs" /><label for="legs">Legs</label><br />
-                        <input type="radio" name="category" value="back" /><label for="back">Back</label><br />
-                        <input type="radio" name="category" value="chest" /><label for="chest">Chest</label><br />
-                        <input type="radio" name="category" value="biceps" /><label for="biceps">Biceps</label><br />
-                        <input type="radio" name="category" value="triceps" /><label for="triceps">Triceps</label><br />
-                        <input type="radio" name="category" value="shoulders" /><label for="shoulders">Shoulders</label><br />
-                        <input type="radio" name="category" value="full body" /><label for="fullBody">Full Body</label><br />
-                        <input type="radio" name="category" value="cardio" /><label for="cardio">Cardio</label><br />
-                        --!>
                         <option value="legs">Legs</option>
                         <option value="back">Back</option>
                         <option value="chest">Chest</option>
@@ -411,11 +378,12 @@ function editProgram() {
                         <option value="full body">Full Body</option>
                         <option value="cardio">Cardio</option>
                     </select>
-                <button type="submit" class="js-saveEdit-button" data-program-id="${programId}">save</button>
-                <button type="submit" class="js-cancelEdit-button" data-program-id="${programId}">cancel</button> 
+                    <button type="submit" class="js-saveEdit-button" data-program-id="${programId}">save</button>
+                    <button type="submit" class="js-cancelEdit-button" data-program-id="${programId}">cancel</button> 
                 </form>
             `)
         }
+
     })
 
 
@@ -427,6 +395,15 @@ function editProgram() {
     //     }
     // })
 
+}
+
+function cancelEdit() {
+    $('main').on('click', '.js-cancelEdit-button', function(event) {
+        event.preventDefault();
+        $(this).siblings('input').addClass('view').attr('readonly', 'readonly');
+        $(this).siblings('select.unitTime').replaceWith(`<input type="text" class="exerciseDetails view unitTime" value="${$(this).siblings('select.unitTime').val()}" readonly></input>`)
+        // $(this).parent('form').remove('button');
+    })
 }
 
 // $(function handleEditButton() {
@@ -524,9 +501,6 @@ $('body').on('click', '.edit-form .js-saveEdit-button', function (event) {
         })
     }
 
-    // For editing Exercise Details
-    // save the value of the input before it's changed, if cancel, or if clicked outside of the area,
-    // set it back to the original value
     if ($(this).closest('form').hasClass('edit-exercise-details')) {
         const id = $(this).closest('.program').attr('data-program-id');
         const exercise = $(this).closest('div.exercise-info').attr('data-exercise-id');

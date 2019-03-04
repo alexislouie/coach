@@ -178,7 +178,7 @@ function appendProgramDetailsForm(program, location) {
 
     for (let i = 0; i < program.schedule.length; i++) {
         const day = program.schedule[i];
-        const dayIndex = i; 
+        const dayIndex = i;
         if (day.name) {
             $(`.program-details[data-program-id="${program.id}"]`).append(`
                 <div class="day" id="${dayIndex}">
@@ -195,7 +195,7 @@ function appendProgramDetailsForm(program, location) {
 
 function displayScheduleData(id, day, dayIndex) {
     for (let i = 0; i < day.exercises.length; i++) {
-        const exerciseInfoId = `infoId-${i}`; 
+        const exerciseInfoId = `infoId-${i}`;
         const exerciseId = day.exercises[i].exercise._id;
         const exercise = day.exercises[i];
         const type = exercise.type;
@@ -279,9 +279,9 @@ function displayScheduleData(id, day, dayIndex) {
                 `;
                 break;
         }
-        
+
         $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]#${exerciseInfoId}`).find('form').append(html);
-        
+
         if (exercise.comments) {
             $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]#${exerciseInfoId}`).find('form').append(`
                 <br /><i>Comments:</i> <input type="text" class="exerciseComments view" value="${exercise.comments}" readonly></input>
@@ -299,6 +299,11 @@ function toggleProgramDisplay() {
         $(programDetails).toggleClass('hidden');
         $(this).parent().siblings('form').toggleClass('editable');
 
+        if ($(programDetails).hasClass('hidden')) {
+            console.log('true')
+            $(this).parent().siblings('form').children('input').toggleClass('view').attr('readonly','readonly');
+            $(this).siblings('.js-saveEdit-button').remove();
+        }
         // if (!($(this).parent().siblings('form').hasClass('editable'))) {
         //     $(this).parent().siblings('form').toggleClass('view');
         // }
@@ -308,7 +313,6 @@ function toggleProgramDisplay() {
 function addButtons(programId) {
     return `
         <button type="submit" class="js-saveEdit-button" data-program-id="${programId}">save</button>
-        <button type="submit" class="js-cancelEdit-button" data-program-id="${programId}">cancel</button>
     `;
 }
 
@@ -361,9 +365,14 @@ function editProgram() {
         if ($(this).children('input').attr('readonly')) {
             $(this).children('input').removeAttr('readonly');
             const programId = $(this).closest('.program').attr('data-program-id');
-            $(this).closest('form').append(addButtons(programId));
+
+            if ($(this).children('input').hasClass('programName')) {
+                $(this).siblings('nav').append(addButtons(programId));  
+            } else {
+                $(this).closest('form').append(addButtons(programId));
+            }
         }
-        if ($(this).hasClass('categories')) {   
+        if ($(this).hasClass('categories')) {
             console.log($(this).val())
             const programId = $(this).closest('.program-details').attr('data-program-id');
             $(this).replaceWith(`
@@ -379,7 +388,7 @@ function editProgram() {
                         <option value="cardio">Cardio</option>
                     </select>
                     <button type="submit" class="js-saveEdit-button" data-program-id="${programId}">save</button>
-                    <button type="submit" class="js-cancelEdit-button" data-program-id="${programId}">cancel</button> 
+
                 </form>
             `)
         }
@@ -398,7 +407,7 @@ function editProgram() {
 }
 
 function cancelEdit() {
-    $('main').on('click', '.js-cancelEdit-button', function(event) {
+    $('main').on('click', '.js-cancelEdit-button', function (event) {
         event.preventDefault();
         $(this).siblings('input').addClass('view').attr('readonly', 'readonly');
         $(this).siblings('select.unitTime').replaceWith(`<input type="text" class="exerciseDetails view unitTime" value="${$(this).siblings('select.unitTime').val()}" readonly></input>`)
@@ -407,14 +416,14 @@ function cancelEdit() {
 }
 
 // $(function handleEditButton() {
-$('body').on('click', '.edit-form .js-saveEdit-button', function (event) {
+$('body').on('click', '.js-saveEdit-button', function (event) {
     event.preventDefault();
 
     // when editing Categories
     if ($(this).closest('form').hasClass('edit-categories')) {
         const programId = $(this).closest('.program').attr('data-program-id');
         const newCategories = $(this).siblings('.categories').val();
-        
+
         const obj = {};
         obj['id'] = programId;
         obj['categories'] = newCategories;
@@ -425,24 +434,25 @@ $('body').on('click', '.edit-form .js-saveEdit-button', function (event) {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${bearer}`
-                }, 
+                },
                 body: JSON.stringify(obj)
             })
-        .then(res => {
-            if (res.ok) {
-                $(this).siblings('.categories').replaceWith(`<span class="editable categories">${newCategories.join(', ')}</span>`);
-                $(this).siblings('button').remove();
-                $(this).remove();
-            }
-            else {
-                throw Error(`Request rejected with status ${res.status}`);
-            }
-        })
+            .then(res => {
+                if (res.ok) {
+                    $(this).siblings('.categories').replaceWith(`<span class="editable categories">${newCategories.join(', ')}</span>`);
+                    // $(this).siblings('button').remove();
+                    $(this).remove();
+                }
+                else {
+                    throw Error(`Request rejected with status ${res.status}`);
+                }
+            })
     }
 
     // Editing Program Name 
-    if ($(this).closest('form').hasClass('edit-program-name')) {
-        const newProgName = $(this).siblings('input').val();
+    if ($(this).parent().siblings('form').hasClass('edit-program-name')) {
+        const newProgName = $(this).parent().siblings('form').find('input').val();
+        console.log(newProgName);
         const id = $(this).closest('.program').attr('data-program-id');
 
         const obj = {};
@@ -455,19 +465,18 @@ $('body').on('click', '.edit-form .js-saveEdit-button', function (event) {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${bearer}`
-                }, 
+                },
                 body: JSON.stringify(obj)
             })
-        .then(res => {
-            if (res.ok) {
-                $(this).siblings('input').toggleClass('view');
-                $(this).siblings('button').remove();
-                $(this).remove();
-            }
-            else {
-                throw Error(`Request rejected with status ${res.status}`);
-            }
-        })
+            .then(res => {
+                if (res.ok) {
+                    $(this).parent().siblings('form').find('input').toggleClass('view').attr('readonly', 'readonly');
+                    $(this).remove();
+                }
+                else {
+                    throw Error(`Request rejected with status ${res.status}`);
+                }
+            })
     }
 
     // Editing Day's Name 
@@ -486,19 +495,19 @@ $('body').on('click', '.edit-form .js-saveEdit-button', function (event) {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${bearer}`
-                }, 
+                },
                 body: JSON.stringify(obj)
             })
-        .then(res => {
-            if (res.ok) {
-                $(this).siblings('input').toggleClass('view');
-                $(this).siblings('button').remove();
-                $(this).remove();
-            }
-            else {
-                throw Error(`Request rejected with status ${res.status}`);
-            }
-        })
+            .then(res => {
+                if (res.ok) {
+                    $(this).siblings('input').toggleClass('view').attr('readonly', 'readonly');
+                    // $(this).siblings('button').remove();
+                    $(this).remove();
+                }
+                else {
+                    throw Error(`Request rejected with status ${res.status}`);
+                }
+            })
     }
 
     if ($(this).closest('form').hasClass('edit-exercise-details')) {
@@ -561,21 +570,21 @@ $('body').on('click', '.edit-form .js-saveEdit-button', function (event) {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${bearer}`
-                }, 
+                },
                 body: JSON.stringify(obj)
             })
-        .then(res => {
-            if (res.ok) {
-                $(this).siblings('input').toggleClass('view');
-                $(this).siblings('select.unitLength').replaceWith(`<input type="text" class="exerciseDetails view unitLength" value="${$(this).siblings('.unitLength').val()}" readonly="">`);
-                $(this).siblings('select.unitTime').replaceWith(`<input type="text" class="exerciseDetails view unitTime" value="${$(this).siblings('.unitTime').val()}" readonly="">`);
-                $(this).siblings('button').remove();
-                $(this).remove();
-            }
-            else {
-                throw Error(`Request rejected with status ${res.status}`);
-            }
-        })
+            .then(res => {
+                if (res.ok) {
+                    $(this).siblings('input').toggleClass('view').attr('readonly', 'readonly');
+                    $(this).siblings('select.unitLength').replaceWith(`<input type="text" class="exerciseDetails view unitLength" value="${$(this).siblings('.unitLength').val()}" readonly="">`);
+                    $(this).siblings('select.unitTime').replaceWith(`<input type="text" class="exerciseDetails view unitTime" value="${$(this).siblings('.unitTime').val()}" readonly="">`);
+                    $(this).siblings('button').remove();
+                    $(this).remove();
+                }
+                else {
+                    throw Error(`Request rejected with status ${res.status}`);
+                }
+            })
     }
 })
 // })

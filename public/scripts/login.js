@@ -29,10 +29,9 @@ function loginUser(user) {
             }
         })
         .then(res => {
-            // const bearer = res.authToken;
             localStorage.setItem('authToken', res.authToken);
             localStorage.setItem('userId', res.userId);
-            alert('authToken = ' + localStorage.getItem('authToken'))
+            return window.location.replace('/profile.html');
         })
 
 }

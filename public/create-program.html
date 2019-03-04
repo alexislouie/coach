@@ -27,12 +27,12 @@
     <main>
         <a href="/profile.html">Go back to profile</a>
         <form class="js-add-program-form add-program-form">
-            <label for="program-name">Program Name:</label>
-            <input type="text" class="programName">
+            <label>Program Name:</label>
+            <input type="text" class="programName" required>
 
             <br />
-            <label for="categories">Categories:</label>
-            <select class="categories" multiple>
+            <label>Categories:</label>
+            <select class="categories" multiple required>
                 <option value="legs">Legs</option>
                 <option value="back">Back</option>
                 <option value="chest">Chest</option>
@@ -44,9 +44,11 @@
             </select>
 
             <br />
-            <label for="programLength">Program Length (in days):</label>
+        </form>
+        
+        <form class="js-add-program-length">
+            <label>Program Length (in days):</label>
             <input type="number" min="1" max="365" class="programLength">
-
             <button type="submit" class="js-add-progLength">Add Length</button>
         </form>
 

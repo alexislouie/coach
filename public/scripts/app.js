@@ -304,9 +304,6 @@ function toggleProgramDisplay() {
             $(this).parent().siblings('form').children('input').toggleClass('view').attr('readonly','readonly');
             $(this).siblings('.js-saveEdit-button').remove();
         }
-        // if (!($(this).parent().siblings('form').hasClass('editable'))) {
-        //     $(this).parent().siblings('form').toggleClass('view');
-        // }
     })
 }
 

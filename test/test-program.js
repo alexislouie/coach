@@ -54,6 +54,7 @@ function generateProgramData(user, exercise) {
                 exercises: [
                     {
                         exercise: mongoose.Types.ObjectId(exercise._id),
+                        type: 'sets & reps',
                         sets: faker.random.number(),
                         reps: faker.random.number(),
                     }
@@ -84,6 +85,7 @@ describe('Program API resource', function () {
                 password: 'password'
             })
             .then(res => {
+                // console.log(res.body)
                 expect(res).to.have.status(201);
                 // console.log('Registered user for Authentication: ', res.body)
             })
@@ -228,11 +230,13 @@ describe('Program API resource', function () {
                                         exercises: [
                                             {
                                                 exercise: mongoose.Types.ObjectId(exercise._id),
+                                                type: 'sets & reps',
                                                 sets: faker.random.number(),
                                                 reps: faker.random.number(),
                                             },
                                             {
                                                 exercise: mongoose.Types.ObjectId(exercise._id),
+                                                type: 'distance & time',
                                                 distance: faker.random.number(),
                                                 time: faker.random.number(),
                                             }
@@ -240,7 +244,7 @@ describe('Program API resource', function () {
                                     }
                                 ]
                             }
-                            //const newProgram = generateProgramData(authenticatedUser, exercise);
+
                             return newProgram
                         })
                         .then(newProgram => {
@@ -248,26 +252,37 @@ describe('Program API resource', function () {
                                 .post('/programs')
                                 .set('Authorization', `Bearer ${token}`)
                                 .send(newProgram)
-                                .then(function (res) {
+                                .then(res => {
+                                    newProgram.id = res.body.id;
                                     expect(res).to.have.status(201);
                                     expect(res).to.be.json;
                                     expect(res.body).to.be.an('object');
-                                    expect(res.body).to.include.keys(
-                                        'id', 'programName', 'categories', 'schedule');
+                                    // expect(res.body).to.include.keys(
+                                    //     'id', 'programName', 'categories', 'schedule');
                                     expect(res.body.id).to.not.be.null;
                                     expect(res.body.programName).to.equal(newProgram.programName);
-                                    // author not included in response
-                                    // expect(res.body.author).to.equal(newProgram.author.toString());
                                     expect(res.body.categories).to.deep.equal(newProgram.categories);
-                                    expect(JSON.stringify(res.body.schedule)).to.equal(JSON.stringify(newProgram.schedule));
 
-                                    return Program.findById(res.body.id);
-                                })
-                                .then(program => {
-                                    expect(program.programName).to.equal(newProgram.programName);
-                                    expect(program.author.toString()).to.equal(newProgram.author);
-                                    expect(program.categories).to.deep.equal(newProgram.categories);
-                                    // expect(JSON.stringify(program.schedule)).to.equal(JSON.stringify(newProgram.schedule));
+                                    const day = newProgram.schedule;
+                                    for (let i = 0; i < day.length; i++) {
+                                        newProgram.schedule[i]._id = res.body.schedule[i]._id;
+                                        for (let j = 0; j < day[i].exercises.length; j++) {
+                                            newProgram.schedule[i].exercises[j]._id = res.body.schedule[i].exercises[j]._id;
+                                        }
+                                    }
+                                    // console.log('res.body in test-program: ', res.body)
+                                    expect(res.body.schedule.name).to.equal(newProgram.schedule.name)
+                                    // expect(({name, exercises} = res.body.schedule)).to.deep.equal(({name, exercises} = newProgram.schedule))
+                                    // expect(res.body.schedule).to.deep.equal(newProgram.schedule);
+
+                                    User
+                                        .findById(newProgram.author)
+                                        .then(user => {
+                                            return user.userName
+                                        })
+                                        .then(userName => {
+                                            expect(res.body.author).to.equal(userName);
+                                        })
                                 });
                         })
                 })
@@ -294,11 +309,13 @@ describe('Program API resource', function () {
                                         exercises: [
                                             {
                                                 exercise: mongoose.Types.ObjectId(exercise._id),
+                                                type: 'sets & reps',
                                                 sets: faker.random.number(),
                                                 reps: faker.random.number(),
                                             },
                                             {
                                                 exercise: mongoose.Types.ObjectId(exercise._id),
+                                                type: 'distance & time',
                                                 distance: faker.random.number(),
                                                 time: faker.random.number(),
                                             }
@@ -371,7 +388,7 @@ describe('Program API resource', function () {
                 .catch(err => console.log(err))
         });
 
-        it('should update the name of the day in a workout', function() {
+        it('should update the name of the day in a workout', function () {
             return Program
                 .findById(programId)
                 .then(doc => {
@@ -395,7 +412,7 @@ describe('Program API resource', function () {
                 .catch(err => console.log(err))
         });
 
-        it('should update exercise', function() {
+        it('should update exercise', function () {
             return Program
                 .findById(programId)
                 .then(doc => {
@@ -445,11 +462,13 @@ describe('Program API resource', function () {
                                         exercises: [
                                             {
                                                 exercise: mongoose.Types.ObjectId(exercise._id),
+                                                type: 'sets & reps',
                                                 sets: faker.random.number(),
                                                 reps: faker.random.number(),
                                             },
                                             {
                                                 exercise: mongoose.Types.ObjectId(exercise._id),
+                                                type: 'distance & time',
                                                 distance: faker.random.number(),
                                                 time: faker.random.number(),
                                             }

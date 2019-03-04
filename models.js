@@ -28,7 +28,7 @@ userSchema.virtual('userProgramsVirtual', {
     ref: 'Program',
     localField: '_id',
     foreignField: 'author'
-  });
+});
 
 userSchema.methods.serialize = function () {
     return {
@@ -49,45 +49,56 @@ userSchema.statics.hashPassword = function(password) {
     return bcrypt.hash(password, 10);
 };
 
+const workoutPlanSchema = mongoose.Schema({
+  exercise: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' },
+  type: { type: String, required: true },
+  sets: { type: Number, required: false },
+  reps: { type: Number, required: false },
+  distance: { type: Number, required: false },
+  unitLength: { type: 'string', required: false },
+  time: { type: Number, required: false },
+  unitTime: { type: 'string', required: false },
+  comments: { type: 'string', required: false }
+})
+
+const scheduleSchema = mongoose.Schema({
+  name: { type: 'string', required: false }, // optional in case user is just submitting a single routine
+  exercises: [ workoutPlanSchema ]
+})
+
+// scheduleSchema.methods.serialize = function () {
+//     return {
+//         id: this._id,
+//         name: this.name,
+//         exercises: this.exercises.map(exercise => exercise.serialize())
+//     }
+// }
+
 const programSchema = mongoose.Schema({
     programName: 'string',
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     categories: ['string'],
-    schedule: [
-        {   _id : false,
-            name: { type: 'string', required: false }, // optional in case user is just submitting a single routine
-            exercises: 
-                [
-                    {   _id : false,
-                        exercise: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' },
-                        sets: { type: Number, required: false },
-                        reps: { type: Number, required: false },
-                        distance: { type: Number, required: false },
-                        unitLength: { type: 'string', required: false },
-                        time: { type: Number, required: false },
-                        unitTime: { type: 'string', required: false },
-                        comments: { type: 'string', required: false }
-                    }
-                ]
-        }
-    ]
+    schedule: [ scheduleSchema ]
 });
 
 programSchema.pre('find', function (next) {
+    console.log('populating author and exercises in pre find');
     this.populate('author');
     this.populate('schedule.exercises.exercise');
     next();
 });
 
-programSchema.virtual('authorUserName').get(function () {
-    return this.author.userName;
-});
+// programSchema.virtual('authorUserName').get(function () {
+//     console.log('triggering virtual');
+//     return this.author.userName;
+// });
 
 programSchema.methods.serialize = function () {
+    // console.log('serialized program: ', this);
     return {
         id: this._id,
         programName: this.programName,
-        author: this.authorUserName,
+        author: this.author.userName,
         categories: this.categories,
         schedule: this.schedule
     }

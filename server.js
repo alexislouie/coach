@@ -33,8 +33,6 @@ app.use(function (req, res, next) {
 passport.use(localStrategy);
 passport.use(jwtStrategy);
 
-// app.use(passport.initialize());
-
 app.use(express.static("public"));
 
 // app.get('/', (req, res) => {
@@ -50,8 +48,6 @@ app.patch('/test', require('body-parser').json(), (req, res) => {
   console.log(req);
   res.json(req.body)
 })
-
-// const jwtAuth = passport.authenticate('jwt', { session: false });
 
 let server;
 

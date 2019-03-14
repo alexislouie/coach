@@ -7,17 +7,18 @@
     <title>Coaching App</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway" rel="stylesheet">
-    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway|Poppins" rel="stylesheet">
+    <link rel="stylesheet" href="/style/main.css">
+    <link rel="stylesheet" href="/style/signup-login.css">
 </head>
 
 
-<header>
+<header class="banner" role="banner">
     <nav role="navigation">
         <span>Hey Coach!</span>
         <ul>
-            <li><a href="/signup.html">Sign Up</a></li>
-            <li><a href="/login.html">Log In</a></li>
+            <a class="nav-link" href="/signup.html">SIGN UP</a>
+            <a class="nav-link" href="/login.html">LOG IN</a>
         </ul>
     </nav>
 </header>
@@ -25,17 +26,18 @@
 <body>
     <main>
 
-        <form class="login-form forms" action="/auth/login" method="post">
-            <fieldset>
-                <legend>Login up</legend>
-                <label for="username">Username:</label>
+        <form class="login-form auth-forms" action="/auth/login" method="post">
+            <header class="form-header">LOGIN</header>
+            <div class="form-details">
+                <label for="username">USERNAME</label>
                 <input type="text" class="login-input" id="login-username" required />
 
-                <label for="password">Password</label>
+                <label for="password">PASSWORD</label>
                 <input type="password" class="login-input" id="login-password" required />
 
+                <hr width=75% align="center" class="line-break">
                 <button type="submit" class="form-button js-login-button">Log In</button>
-            </fieldset>
+            </div>
         </form>
 
         <div class="form-links">
@@ -43,13 +45,13 @@
             Are you new here?
             <a href="/signup.html">Sign Up</a>
         </div>
-        
+
     </main>
 
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
         crossorigin="anonymous"></script>
     <script src="/scripts/login.js"></script>
-
+    <script src="/scripts/header.js"></script>
 
 </body>
 

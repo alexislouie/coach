@@ -1,0 +1,25 @@
+
+.circles-parent {
+    text-align: center;
+}
+
+.col {
+    display: inline-block;
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.middle-col {
+    margin-left: 30px;
+    margin-right: 30px;
+}
+
+img {
+    width: 300px;
+}
+
+h1 {
+    font-family: 'Raleway', sans-serif;
+    font-weight: 100;
+}

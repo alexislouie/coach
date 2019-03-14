@@ -1,3 +1,6 @@
+const bearer = localStorage.getItem('authToken');
+const id = localStorage.getItem('userId');
+
 function handleLogin() {
     $('body').on('click', '.js-login-button', function (event) {
         event.preventDefault();
@@ -5,7 +8,6 @@ function handleLogin() {
         const user = {};
         user['username'] = $('#login-username').val();
         user['password'] = $('#login-password').val();
-        console.log(user);
 
         loginUser(user);
     })
@@ -25,7 +27,8 @@ function loginUser(user) {
                 return res.json();
             }
             else {
-                throw Error(`Request rejected with status ${res.status}`);
+                // throw Error(`Request rejected with status ${res.status}`);
+                $('.form-header').after(`<div class="errors">Invalid username or password</div>`)
             }
         })
         .then(res => {

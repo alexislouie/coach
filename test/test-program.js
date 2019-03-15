@@ -75,7 +75,6 @@ describe('Program API resource', function () {
     });
 
     beforeEach(function () {
-        // sets up authentication (before each test runs, create a user and authenticate them)
         return chai.request(app)
             .post('/users/register')
             .send({
@@ -85,16 +84,13 @@ describe('Program API resource', function () {
                 password: 'password'
             })
             .then(res => {
-                // console.log(res.body)
                 expect(res).to.have.status(201);
-                // console.log('Registered user for Authentication: ', res.body)
             })
             .then(() => {
                 return User
                     .findOne()
                     .then(user => {
                         userId = user.id;
-                        // console.log('userId global set to current user: ', userId)
                         const userCredentials = {
                             username: 'authuser',
                             password: 'password'
@@ -103,13 +99,11 @@ describe('Program API resource', function () {
                         return userCredentials;
                     })
                     .then(userCredentials => {
-                        // console.log('posting credentials: ', userCredentials)
                         return authenticatedUser
                             .post('/auth/login')
                             .send(userCredentials)
                             .then(res => {
                                 token = res.body.authToken;
-                                //console.log('token set to: ', token);
                                 return token;
                             });
                     })
@@ -184,7 +178,6 @@ describe('Program API resource', function () {
                             return Program.findById(resProgram.id)
                         })
                         .then(program => {
-                            //console.log('program: ', program)
                             expect(resProgram.programName).to.equal(program.programName);
                             User
                                 .findById(program.author)
@@ -219,7 +212,6 @@ describe('Program API resource', function () {
                     return Exercise
                         .findOne()
                         .then(exercise => {
-                            // console.log('USER ID IN POST TEST: ', userId)
                             const newProgram = {
                                 programName: faker.lorem.words(),
                                 author: userId,
@@ -257,8 +249,6 @@ describe('Program API resource', function () {
                                     expect(res).to.have.status(201);
                                     expect(res).to.be.json;
                                     expect(res.body).to.be.an('object');
-                                    // expect(res.body).to.include.keys(
-                                    //     'id', 'programName', 'categories', 'schedule');
                                     expect(res.body.id).to.not.be.null;
                                     expect(res.body.programName).to.equal(newProgram.programName);
                                     expect(res.body.categories).to.deep.equal(newProgram.categories);
@@ -270,10 +260,7 @@ describe('Program API resource', function () {
                                             newProgram.schedule[i].exercises[j]._id = res.body.schedule[i].exercises[j]._id;
                                         }
                                     }
-                                    // console.log('res.body in test-program: ', res.body)
                                     expect(res.body.schedule.name).to.equal(newProgram.schedule.name)
-                                    // expect(({name, exercises} = res.body.schedule)).to.deep.equal(({name, exercises} = newProgram.schedule))
-                                    // expect(res.body.schedule).to.deep.equal(newProgram.schedule);
 
                                     User
                                         .findById(newProgram.author)

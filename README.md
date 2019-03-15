@@ -28,7 +28,7 @@ Create Program Page:
 
 Summary
 -------
-- Users are able to sign up or login from the home page.
+- Users are able to sign up or login from the home page. Users who have not signed in cannot access profile pages, the search page, or create programs. 
 - After successfully logging in, users are redirected to their profile pages. This page includes programs the user has uploaded as well as their favorited programs.
 - Users can search for programs by program name or by program type (i.e. legs, back, biceps, chest, triceps, shoulders, full body, cardio). If a user sees a program they like, they can click the star to favorite it. Any favorited programs will show up on the user's profile page later.
 - Users can upload their own programs for other users to access and favorite by clicking on the 'upload' link in the navigation bar. 

@@ -23,7 +23,6 @@ const userSchema = mongoose.Schema({
     savedPrograms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Program' }]
 }, { toJSON: { virtuals: true }, toObject: { virtuals: true }});
 
-// Programs that the user has written 
 userSchema.virtual('userProgramsVirtual', {
     ref: 'Program',
     localField: '_id',
@@ -62,17 +61,9 @@ const workoutPlanSchema = mongoose.Schema({
 })
 
 const scheduleSchema = mongoose.Schema({
-  name: { type: 'string', required: false }, // optional in case user is just submitting a single routine
+  name: { type: 'string', required: false },
   exercises: [ workoutPlanSchema ]
 })
-
-// scheduleSchema.methods.serialize = function () {
-//     return {
-//         id: this._id,
-//         name: this.name,
-//         exercises: this.exercises.map(exercise => exercise.serialize())
-//     }
-// }
 
 const programSchema = mongoose.Schema({
     programName: 'string',
@@ -88,13 +79,7 @@ programSchema.pre('find', function (next) {
     next();
 });
 
-// programSchema.virtual('authorUserName').get(function () {
-//     console.log('triggering virtual');
-//     return this.author.userName;
-// });
-
 programSchema.methods.serialize = function () {
-    // console.log('serialized program: ', this);
     return {
         id: this._id,
         programName: this.programName,

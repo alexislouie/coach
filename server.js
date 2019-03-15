@@ -35,10 +35,6 @@ passport.use(jwtStrategy);
 
 app.use(express.static("public"));
 
-// app.get('/', (req, res) => {
-//   res.sendFile(__dirname + '/public/index.html');
-// });
-
 app.use('/users', userRouter);
 app.use('/programs', programsRouter);
 app.use('/exercises', exercisesRouter);
@@ -53,7 +49,6 @@ let server;
 
 function runServer(databaseUrl, port=PORT) {
   return new Promise((resolve, reject) => {
-    // mongoose.set('useFindAndModify', false);
     mongoose.connect(databaseUrl, err => {
       if (err) {
         return reject(err);

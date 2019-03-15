@@ -7,9 +7,7 @@ const { User } = require('./models');
 const router = express.Router();
 const jsonParser = bodyParser.json();
 
-// Middleware for Authentication
 const jwtAuth = passport.authenticate('jwt', { session: false });
-
 
 router.get('/', (req, res) => {
     const filter = {};
@@ -28,8 +26,6 @@ router.get('/', (req, res) => {
         });
 })
 
-// will have to include users' programs/the program virtual I created before
-// this is now protected by jwtAuth
 router.get('/:id', jwtAuth, (req, res) => {
     User
         .findById(req.params.id)
@@ -117,7 +113,6 @@ router.post('/register', jsonParser, (req, res) => {
         .count()
         .then(count => {
             if (count > 0) {
-                // why is this Promise.reject and not res.status(422).json?
                 return Promise.reject({
                     code: 422,
                     reason: 'ValidationError',
@@ -147,7 +142,6 @@ router.post('/register', jsonParser, (req, res) => {
         });
 });
 
-// req looks like: { "op": "add", "path": "savedPrograms", "value": "5c2a679abd6ad21ec65e2768" }
 router.patch('/:id', jwtAuth, jsonParser, (req, res) => {
     if (!(req.body.op === 'add') && !(req.body.op === 'remove')) {
         return res.status(400).json({
@@ -158,7 +152,6 @@ router.patch('/:id', jwtAuth, jsonParser, (req, res) => {
 
     if (req.body.path === 'savedPrograms') {
         if (req.body.op === 'add') {
-            //console.log(req.params, req.body)
             return User
                 .findOneAndUpdate(
                     { _id: req.params.id },

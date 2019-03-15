@@ -22,7 +22,6 @@ router.get('/', jwtAuth, (req, res) => {
         .find(filters)
         .then(programs => {
             res.json(programs.map(program => program.serialize()))
-            // res.json(programs)
         })
         .catch(err => {
             console.error(err);
@@ -36,7 +35,6 @@ router.get('/:id', (req, res) => {
         .then(program => program.populate('author').populate('schedule.exercises.exercise').execPopulate())
         .then(program => {
             res.json(program.serialize())
-            // console.log('logged serialized program: ', program.serialize())
         })
 });
 
@@ -51,7 +49,6 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
         }
     }
 
-    // confirms that categories has at leastlength of 1 
     const catLength = req.body.categories.length;
     if (catLength === 0) {
         const message = 'Enter categories';
@@ -59,7 +56,6 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
         return res.status(400).send(message);
     }
 
-    // confirms categories = legs, back, chest, biceps, triceps, shoulders, full body, cardio
     const acceptedCat = ['legs', 'back', 'chest', 'biceps', 'triceps', 'shoulders', 'full body', 'cardio'];
     // loop through input categories 
     req.body.categories.forEach(category => {
@@ -70,7 +66,6 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
         }
     })
 
-    // confirms that schedule has at least length of 1
     const schedLength = req.body.schedule.length;
     if (schedLength == 0) {
         const message = 'Schedule is empty';
@@ -78,8 +73,6 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
         return res.status(400).send(message);
     };
 
-    // if schedule is > 1, confirm that each day includes a name 
-    // (programs that are only 1 day long don't need a name)
     if (schedLength > 1) {
         for (let i = 0; i < schedLength; i++) {
             let day = req.body.schedule[i];
@@ -91,7 +84,6 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
         }
     }
 
-    // confirms each exercise has name, validates Units, and confirms #s
     for (let i = 0; i < schedLength; i++) {
         let exerciseList = req.body.schedule[i].exercises;
         for (let j = 0; j < exerciseList.length; j++) {
@@ -127,42 +119,9 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
                     return res.status(400).send(message);
                 }
             }
-
-            // validates sets, reps, distance, and time are numbers
-            // if (exerciseList[j].sets) {
-            //     if (!(typeof exerciseList[j].sets === 'number')) {
-            //         const message = 'Sets must be a number';
-            //         console.error(message);
-            //         return res.status(400).send(message);
-            //     }
-            // }
-            // if (exerciseList[j].reps) {
-            //     console.log(typeof exerciseList[j].reps)
-            //     if (typeof exerciseList[j].sets != 'number') {
-            //         const message = 'Reps must be a number';
-            //         console.error(message);
-            //         return res.status(400).send(message);
-            //     }
-            // }
-            // if (exerciseList[j].distance) {
-            //     if (!(typeof exerciseList[j].distance === 'number')) {
-            //         const message = 'Distance must be a number';
-            //         console.error(message);
-            //         return res.status(400).send(message);
-            //     }
-            // }
-            // if (exerciseList[j].time) {
-            //     if (!(typeof exerciseList[j].time === 'number')) {
-            //         const message = 'Time must be a number';
-            //         console.error(message);
-            //         return res.status(400).send(message);
-            //     }
-            // }
-
         }
     }
 
-    // console.log('req.user.id: ', req.user.id)
     Program
         .create({
             programName: req.body.programName,
@@ -171,8 +130,6 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
             schedule: req.body.schedule
         })
         .then(program => program.populate('author').execPopulate())
-        // .populate('author')
-        // .then(program => console.log('program: ', program))
         .then(program => res.status(201).json(program.serialize()))
         .catch(err => {
             console.error(err);
@@ -218,8 +175,6 @@ router.put('/:id/schedule/:schedule_id', jsonParser, (req, res) => {
             error: 'Request path id and request body id values must match'
         });
     }
-
-    console.log(req.body)
 
     const scheduleId = req.params.schedule_id;
     const attr = `schedule.${scheduleId}.name`;

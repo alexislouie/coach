@@ -7,12 +7,12 @@
     <title>Coaching App</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway" rel="stylesheet">
-    <link rel="stylesheet" href="/main.css">
-    <link rel="stylesheet" href="/EasyAutocomplete-1.3.5/easy-autocomplete.min.css"> 
+    <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway|Poppins|Lato" rel="stylesheet">
+    <link rel="stylesheet" href="/style/main.css">
+    <link rel="stylesheet" href="/style/profile.css">
 </head>
 
-<header>
+<header class="banner" role="banner">
     <nav role="navigation">
         <span>Hey Coach!</span>
         <ul>
@@ -25,20 +25,18 @@
 
 <body>
     <main>
-        <div class="js-user-programs">
-            <span>Your Programs:</span>
-            <a href="/create-program.html">Create New Program</a>
-            <!-- <button class="js-add-button" type="submit">Create New Program</button> -->
+        <div class="js-user-programs profilePrograms">
+            <span class="programLabel">PROGRAMS BY YOU</span>
+            <!-- <a href="/create-program.html">Create New Program</a> -->
+        </div>
+        <!-- <br /> -->
+        <div class="js-saved-programs profilePrograms">
+            <span class="programLabel">SAVED PROGRAMS</span>
+            <!-- <a href="/search.html">Find more programs</a> -->
+        </div>
 
-        </div>
-        <br />
-        <div class="js-saved-programs">
-            <span>Saved Programs:</span>
-            <a href="/search.html">Find more programs</a>
-        </div>
-        <div class="js-add-programs">
-
-        </div>
+        <!-- <div class="js-add-programs">
+        </div> -->
 
     </main>
 

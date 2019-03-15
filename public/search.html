@@ -7,16 +7,18 @@
     <title>Coaching App</title>
     <meta name="description" content="If you fell through the Earth, where would you land?">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway" rel="stylesheet">
-	<link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway|Poppins|Lato" rel="stylesheet">
+    <link rel="stylesheet" href="/style/main.css">
+    <link rel="stylesheet" href="/style/search.css">
+
 </head>
 
-<header>
+<header class="banner" role="banner">
     <nav role="navigation">
         <span>Hey Coach!</span>
         <ul>
-            <li><a href="/signup.html">Sign Up</a></li>
-            <li><a href="/login.html">Log In</a></li>
+            <li><a class="nav-link "href="/signup.html">Sign Up</a></li>
+            <li><a class="nav-link" href="/login.html">Log In</a></li>
         </ul>
     </nav>
 </header>
@@ -27,13 +29,12 @@
             <select name="searchCat">
                 <option value="programName" class="programName">Program Title</option>
                 <option value="categories" class="categories">Category</option>
-                <!-- <option value="author">Author</option> -->
             </select>
             <input type="text" class="searchbox">
-            <button class="js-search-button" type="submit">Search</button>
+            <button class="js-search-button search-button" type="submit">SEARCH</button>
         </form>
 
-        <div class="js-search-results">
+        <div class="js-search-results search-results" hidden>
         </div>
 
     </main>

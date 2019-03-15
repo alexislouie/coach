@@ -11,9 +11,16 @@ const jsonParser = bodyParser.json();
 const jwtAuth = passport.authenticate('jwt', { session: false });
 
 
-router.get('/', jwtAuth, (req, res) => {
+router.get('/', (req, res) => {
+    const filter = {};
+    const queryableFields = ['userName']
+    queryableFields.forEach(field => {
+        if (req.query[field]) {
+            filter[field] = req.query[field];
+        }
+    });
     User
-        .find()
+        .find(filter)
         .then(users => res.json(users.map(user => user.serialize())))
         .catch(err => {
             console.error(err);

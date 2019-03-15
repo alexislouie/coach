@@ -7,61 +7,68 @@
   <title>Coaching App</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway" rel="stylesheet">
-  <link rel="stylesheet" href="main.css">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Poppins|Oswald" rel="stylesheet">
+  <link rel="stylesheet" href="/style/main.css">
+  <link rel="stylesheet" href="/style/index.css">
+
 </head>
 
 
-<header>
+<header class="banner" role="banner">
   <nav role="navigation">
     <span>Hey Coach!</span>
     <ul>
-      <li><a href="/signup.html">Sign Up</a></li>
-      <li><a href="/login.html">Log In</a></li>
+      <a class="nav-link" href="/signup.html">SIGN UP</a>
+      <a class="nav-link" href="/login.html">LOG IN</a>
+
+      <div class="menu-icon">
+        <div class="bar bar1"></div>
+        <div class="bar bar2"></div>
+        <div class="bar bar3"></div>
+      </div>
     </ul>
+
   </nav>
 </header>
 
 <body>
   <main>
+    <div class="main-text">
+      <span>NEVER GYM WITHOUT A PLAN AGAIN</span><br />
+      <a class="about-link" href='/#about'>Learn more →</a>
+    </div>
 
-    <div class="circles-parent">
+    <div id="about">
 
-      <div class="col">
-        <img src="https://www.community-circles.co.uk/wp-content/uploads/2017/09/CC-logo_fb.png" alt="circle" />
-
-        <div class="text">
-          <span>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-            ea commodo consequat. </span>
+        <div class="container">
+          <header class="about-header">Search for Programs</header>
+          <div class="description">
+            Search our catalog of programs and workout plans uploaded by our community of trainers and fellow gym goers.
+          </div>
         </div>
-      </div>
 
-      <div class="col middle-col">
-        <img src="https://www.community-circles.co.uk/wp-content/uploads/2017/09/CC-logo_fb.png" alt="circle" />
-
-        <div class="text">
-          <span>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-            ea commodo consequat. </span>
+        <div class="container">
+          <header class="about-header">Save Programs</header>
+          <div class="description">
+            Save your favorite programs that fit with your personal fitness goals to reference while you’re at the gym
+          </div>
         </div>
-      </div>
 
-      <div class="col">
-        <img src="https://www.community-circles.co.uk/wp-content/uploads/2017/09/CC-logo_fb.png" alt="circle" />
-
-        <div class="text">
-          <span>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-            ea commodo consequat. </span>
+        <div class="container">
+          <header class="about-header">Upload Your Programs</header>
+          <div class="description">
+            Need a place to share and catalog your favorite routines? Build the community by uploading your favorite workouts, routines, and programs!
+          </div>
         </div>
-      </div>
 
     </div>
+
   </main>
 
   <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
     crossorigin="anonymous"></script>
+  <script src="/scripts/index.js"></script>
+  <script src="/scripts/header.js"></script>
 
 </body>
 

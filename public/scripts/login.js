@@ -27,6 +27,7 @@ function loginUser(user) {
                 return res.json();
             }
             else {
+                $('.errors').remove();
                 $('.form-header').after(`<div class="errors">Invalid username or password</div>`)
             }
         })

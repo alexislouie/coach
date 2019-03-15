@@ -27,7 +27,6 @@ function loginUser(user) {
                 return res.json();
             }
             else {
-                // throw Error(`Request rejected with status ${res.status}`);
                 $('.form-header').after(`<div class="errors">Invalid username or password</div>`)
             }
         })

@@ -8,7 +8,6 @@ const jwtAuth = passport.authenticate('jwt', { session: false });
 
 const { Exercise } = require('./models');
 
-// when a user creates a program, they'll need to GET all the Exercises for the Autocomplete section
 router.get('/', (req, res) => {
     const filters = {};
     const queryableFields = ['id', 'name'];
@@ -29,13 +28,11 @@ router.get('/', (req, res) => {
         });
 })
 
-// When user decides to create a new exercise, name and id provided
 router.post('/', jwtAuth, jsonParser, (req, res) => {
     Exercise
         .find ({ name: req.body.name.trim() })
         .then(list => {
             if (list.length > 0) {
-                console.log('list: ', list)
                 res.status(200).json({ name: list.name, id: list.id})
             }
             else {

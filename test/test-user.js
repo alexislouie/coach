@@ -91,7 +91,6 @@ function generateUserData() {
         lastName: faker.name.lastName(),
         userName: faker.internet.userName(),
         password: faker.lorem.word() + '12345678',
-        //savedPrograms: []
     }
 }
 

@@ -15,7 +15,9 @@ $('main').on('click', '.js-search-button', function (event) {
     const searchCat = $(this).siblings('select').val();
     const q = $(this).siblings('.searchbox').val();
 
-    fetch(`http://localhost:8080/programs?${searchCat}=${q}`, 
+    $('.js-search-results').removeAttr('hidden');
+
+    fetch(`http://localhost:8080/programs?${searchCat}=${q}`,
         {
             method: 'GET',
             headers: {
@@ -36,11 +38,13 @@ $('main').on('click', '.js-search-button', function (event) {
 
 function displaySearchResults(data) {
     $('.js-search-results').html('');
+    $('.js-search-results').append(`
+        <header class="search-header">SEARCH RESULTS</header><br/>
+    `);
     if (data.length === 0) {
-        $('.js-search-results').append('No results found');
+        $('.js-search-results').append('<div class="no-results">No results found</div>');
     }
     else {
-        $('.js-search-results').append('Search Results:<br/>');
         for (let i = 0; i < data.length; i++) {
             const program = data[i]
             displayPrograms(program);
@@ -54,7 +58,7 @@ function displayPrograms(program) {
             <div class="programHeader">
                 <h2>${program.programName} by ${program.author}</h2>
                 <nav class="program-buttons">
-                    <button class="js-fetch-program" data-program-id="${program.id}">show</button>
+                    <button class="js-fetch-program" data-program-id="${program.id}"><i class="up"></i></button>
                 </nav>
             </div>
         </div>
@@ -82,10 +86,10 @@ function addSaveButton(programId) {
 
             let html;
             if (savedPrograms.includes(programId)) {
-                html = `<button class="js-unsave-button" data-program-id="${programId}">unsave</button>`;
+                html = `<button class="js-unsave-button unsave-button" data-program-id="${programId}">★</button>`;
             }
             else {
-                html = `<button class="js-save-button" data-program-id="${programId}">save</button>`;
+                html = `<button class="js-save-button save-button" data-program-id="${programId}">☆</button>`;
             }
             $(`.program[data-program-id="${programId}"]`).find('nav').append(html)
         })
@@ -98,7 +102,6 @@ $('main').on('click', '.js-save-button', function (event) {
         path: 'savedPrograms'
     };
     obj['value'] = programId;
-    console.log(obj)
 
     fetch(`/users/${id}`,
         {
@@ -111,8 +114,7 @@ $('main').on('click', '.js-save-button', function (event) {
         })
         .then(res => {
             if (res.ok) {
-                console.log('success! program has been saved')
-                $(this).replaceWith(`<button class="js-unsave-button" data-program-id="${programId}">unsave</button>`)
+                $(this).replaceWith(`<button class="js-unsave-button unsave-button" data-program-id="${programId}">★</button>`)
             }
             else {
                 throw Error(`Request rejected with status ${res.status}`);
@@ -128,8 +130,6 @@ $('main').on('click', '.js-unsave-button', function (event) {
     };
     obj['value'] = programId;
 
-    console.log(obj)
-
     fetch(`/users/${id}`,
         {
             method: 'PATCH',
@@ -141,8 +141,7 @@ $('main').on('click', '.js-unsave-button', function (event) {
         })
         .then(res => {
             if (res.ok) {
-                console.log('success! program has been unsaved')
-                $(this).replaceWith(`<button class="js-save-button" data-program-id="${programId}">save</button>`)
+                $(this).replaceWith(`<button class="js-save-button save-button" data-program-id="${programId}">☆</button>`)
 
             }
             else {
@@ -157,7 +156,7 @@ function handleFetchButton() {
         $(this).prop('hidden', true);
 
         const programId = $(this).closest('.program').data('program-id');
-        $(this).closest('.program-buttons').prepend(`<button class="js-show-program" data-program-id="${programId}">toggle</button>`);
+        $(this).closest('.program-buttons').prepend(`<button class="js-show-program" data-program-id="${programId}"><i class="down"></i></button>`);
 
         fetchProgram(programId);
     })
@@ -200,13 +199,13 @@ function appendProgramDetailsForm(program) {
     for (let i = 0; i < program.schedule.length; i++) {
         const day = program.schedule[i];
         const dayIndex = i;
+        $(`.program-details[data-program-id="${program.id}"]`).append(`
+            <div class="day" id="${dayIndex}">
+            </div>
+            <br />
+        `)
         if (day.name) {
-            $(`.program-details[data-program-id="${program.id}"]`).append(`
-                <div class="day" id="${dayIndex}">
-                    <b>${day.name}</b>
-                </div>
-                <br />
-            `)
+            $(`.program-details[data-program-id="${program.id}"]`).find(`.day#${dayIndex}`).append(`<b>${day.name}</b>`)
         }
         displayScheduleData(program.id, day, dayIndex);
     }
@@ -276,6 +275,12 @@ function displayScheduleData(id, day, dayIndex) {
 
 $('main').on('click', '.js-show-program', function (event) {
     event.preventDefault();
+    if ($(this).css("transform") == 'none') {
+        $(this).css("transform", "rotate(180deg)");
+    } else {
+        $(this).css("transform", "");
+    }
+
     const programDetails = $(this).closest('div').siblings(`.program-details`);
     $(programDetails).toggleClass('hidden');
 })

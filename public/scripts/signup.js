@@ -13,24 +13,6 @@ function handleSignUp() {
         if (!userName || userName.trim().length < 3 || userName.trim().length > 20) {
             alertArr.push('valid username (min 3 characters, max 20)');
         } else {
-            // fetch(`http://localhost:8080/users?userName=${userName}`,
-            //     { method: 'GET' })
-            //     .then(res => {
-            //         if (res.ok) {
-            //             return res.json();
-            //         }
-            //         else {
-            //             throw Error(`Request rejected with status ${res.status}`);
-            //         }
-            //     })
-            //     .then(data => {
-            //         if (data.length === 0) {
-            //             regUser['userName'] = userName;
-            //         } 
-            //         else if (data.length > 0) {
-            //             $('.errors').append(`<li>unique username</li>`)
-            //         }
-            //     })
             regUser['userName'] = userName;
         }
 

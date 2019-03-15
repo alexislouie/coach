@@ -99,7 +99,7 @@ function tearDownDb() {
     return mongoose.connection.dropDatabase();
 }
 
-describe.only('User API resource', function () {
+describe('User API resource', function () {
     before(function () {
         return runServer(TEST_DATABASE_URL);
     });

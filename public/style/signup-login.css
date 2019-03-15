@@ -1,7 +1,6 @@
 .form-header {
     background-image: linear-gradient(to right, #BFF098, #6FD6FF);
     border-radius: 10px 10px 0 0;
-    /* padding: 0 10px; */
     text-align: center;
     color: white;
     font-family: Lato;
@@ -78,7 +77,6 @@ input {
 }
 .form-button:hover {
     background-color: #BFF098;
-    /* background-image: linear-gradient(to right, #BFF098, #6FD6FF); */
     color: white;
 }
 

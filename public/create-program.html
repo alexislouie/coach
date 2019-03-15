@@ -7,12 +7,13 @@
     <title>Coaching App</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway" rel="stylesheet">
-    <link rel="stylesheet" href="/main.css">
-    <link rel="stylesheet" href="/EasyAutocomplete-1.3.5/easy-autocomplete.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat|Raleway|Poppins|Lato" rel="stylesheet">
+    <link rel="stylesheet" href="/style/main.css">
+    <link rel="stylesheet" href="/style/create-program.css">
+    <link rel="stylesheet" href="/scripts/EasyAutocomplete-1.3.5/easy-autocomplete.min.css">
 </head>
 
-<header>
+<header class="banner" role="banner">
     <nav role="navigation">
         <span>Hey Coach!</span>
         <ul>
@@ -25,14 +26,14 @@
 
 <body>
     <main>
-        <a href="/profile.html">Go back to profile</a>
+        <header class="form-header">CREATE PROGRAM</header>
         <form class="js-add-program-form add-program-form">
-            <label>Program Name:</label>
-            <input type="text" class="programName" required>
-
+            <label>PROGRAM NAME:</label><br />
+            <input type="text" class="programName" placeholder="e.g. 30 Days to Fit" required>
             <br />
-            <label>Categories:</label>
-            <select class="categories" multiple required>
+            <br />
+            <label>CATEGORIES:</label><br />
+            <select class="createProgCategories" multiple required>
                 <option value="legs">Legs</option>
                 <option value="back">Back</option>
                 <option value="chest">Chest</option>
@@ -42,21 +43,19 @@
                 <option value="fullBody">Full Body</option>
                 <option value="cardio">Cardio</option>
             </select>
-
-            <br />
         </form>
         
         <form class="js-add-program-length">
-            <label>Program Length (in days):</label>
+            <label>PROGRAM LENGTH (in days):</label><br />
             <input type="number" min="1" max="365" class="programLength">
-            <button type="submit" class="js-add-progLength">Add Length</button>
+            <button type="submit" class="js-add-progLength add-progLength-button">ADD LENGTH</button>
         </form>
 
     </main>
 
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
         crossorigin="anonymous"></script>
-    <script src="/EasyAutocomplete-1.3.5/jquery.easy-autocomplete.min.js"></script>
+    <script src="/scripts/EasyAutocomplete-1.3.5/jquery.easy-autocomplete.min.js"></script>
     <script src="/scripts/create-program.js"></script>
     <script src="/scripts/header.js"></script>
 

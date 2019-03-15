@@ -30,23 +30,34 @@ function displayProfile() {
             const userPrograms = data.userPrograms;
             const savedPrograms = data.savedPrograms;
 
-            displayWelcome(data.userName);
             displayPrograms(userPrograms, savedPrograms);
         })
 }
 
 function displayWelcome(userName) {
     $('main').prepend(`
-        <h1>Welcome Back ${userName}!</h1>
+        <h1>Welcome ${userName}!</h1>
     `);
 }
 
 function displayUserProgramsDefault() {
-    $('.js-user-programs').append(`<br/><span>You haven't created any programs</span>`);
+    $('.js-user-programs').append(`
+        <div class="default-display">
+            You haven't created any programs<br />
+            <br />
+            <a href="/create-program.html">Create New Program</a>
+        </div>
+    `);
 }
 
 function displaySavedProgramsDefault() {
-    $('.js-saved-programs').append(`<br /><span>You haven't saved any programs</span>`);
+    $('.js-saved-programs').append(`
+        <div class="default-display">
+            You haven't saved any programs<br />
+            <br />
+            <a href="/search.html">Find more programs</a>
+        </div>
+    `);
 }
 
 function displayUserPrograms(program) {
@@ -58,7 +69,7 @@ function displayUserPrograms(program) {
                     <input type="select" class="programName view" value="${program.programName}" readonly></input>
                 </form>
                 <nav class="program-buttons" role="navigation">
-                    <button class="js-fetch-program" data-program-id="${program._id}">show</button>
+                    <button class="js-fetch-program display-button" data-program-id="${program._id}"><i class="up"></i></button>
                 </nav>
             </div>
         </div>
@@ -71,7 +82,7 @@ function displaySavedPrograms(program) {
             <div class="programHeader">
                 <h2>${program.programName} by ${program.author}</h2>
                 <nav class="program-buttons" role="navigation">
-                    <button class="js-show-program" data-program-id="${program.id}">toggle</button>
+                    <button class="js-toggle-program display-button" data-program-id="${program.id}"><i class="up"></i></button>
                 </div>
             </div>
         </div>
@@ -125,9 +136,8 @@ function handleFetchButton() {
         $(this).prop('hidden', true);
         $(this).parent().siblings('form').toggleClass('editable');
 
-
         const programId = $(this).closest('.program').data('program-id');
-        $(this).closest('.program-buttons').prepend(`<button class="js-show-program" data-program-id="${programId}">toggle</button>`);
+        $(this).closest('.program-buttons').prepend(`<button class="js-toggle-program display-button" data-program-id="${programId}"><i class="down"></i></button>`);
 
         const container = '.js-user-programs';
         fetchProgram(programId, container);
@@ -157,7 +167,6 @@ function fetchProgram(id, container) {
 function appendProgramDetailsForm(program, location) {
     const categories = program.categories.join(', ');
 
-    // put all user programs stuff in this and toggle the 'editable' class 
     if (location === '.js-user-programs') {
         $(location).find(`.program[data-program-id="${program.id}"].programName`).toggleClass('editable');
     }
@@ -179,28 +188,31 @@ function appendProgramDetailsForm(program, location) {
     for (let i = 0; i < program.schedule.length; i++) {
         const day = program.schedule[i];
         const dayIndex = i;
-        if (day.name) {
-            $(`.program-details[data-program-id="${program.id}"]`).append(`
+        $(location).find(`.program-details[data-program-id="${program.id}"]`).append(`
                 <div class="day" id="${dayIndex}">
-                    <form class="edit-day-name edit-form editable">
-                        <input type="text" class="day-name view" value="${day.name}" readonly></input>
-                    </form>
                 </div>
                 <br />
             `)
+        if (day.name) {
+            $(location).find(`.program-details[data-program-id="${program.id}"]`).find(`.day#${dayIndex}`).append(`
+            <form class="edit-day-name edit-form editable">
+                <input type="text" class="day-name view" value="${day.name}" readonly></input>
+            </form>
+        `)
         }
-        displayScheduleData(program.id, day, dayIndex);
+
+        displayScheduleData(program.id, day, dayIndex, location);
     }
 }
 
-function displayScheduleData(id, day, dayIndex) {
+function displayScheduleData(id, day, dayIndex, location) {
     for (let i = 0; i < day.exercises.length; i++) {
         const exerciseInfoId = `infoId-${i}`;
         const exerciseId = day.exercises[i].exercise._id;
         const exercise = day.exercises[i];
         const type = exercise.type;
 
-        $(`.program-details[data-program-id="${id}"]`).find(`.day#${dayIndex}`).append(`
+        $(location).find(`.program-details[data-program-id="${id}"]`).find(`.day#${dayIndex}`).append(`
             <div class="exercise-info edit-exercise" data-program-id="${id}" data-exercise-id="${exerciseId}" data-type="${type}" id="${exerciseInfoId}">
                 <form class="edit-form edit-exercise-details">
                 <span class="exercise-name">${day.exercises[i].exercise.name}</span>: 
@@ -216,14 +228,12 @@ function displayScheduleData(id, day, dayIndex) {
                     break;
                 }
                 html = `
-                    <br />
                         <input type="number" class="exerciseDetails view sets" min="0" max="100" value="${exercise.sets}" readonly></input> x 
                         <input type="number" class="exerciseDetails view reps" min="0" max="999" value="${exercise.reps}" readonly></input>
                 `;
                 break;
             case 'reps & time':
                 html = `
-                    <br />
                         <input type="number" class="exerciseDetails view reps" min="0" max="999" value="${exercise.reps}" readonly></input> x
                         <input type="number" class="exerciseDetails view time" min="0" max="999" value="${exercise.time}" readonly></input>
                         <input type="text" class="exerciseDetails view unitTime" value="${exercise.unitTime}" readonly></input>
@@ -231,7 +241,6 @@ function displayScheduleData(id, day, dayIndex) {
                 break;
             case 'reps & distance':
                 html = `
-                    <br />
                         <input type="number" class="exerciseDetails view reps" min="0" max="999" value="${exercise.reps}" readonly></input> x
                         <input type="number" class="exerciseDetails view distance" min="0" value="${exercise.distance}" readonly></input>
                         <input type="text" class="exerciseDetails view unitLength" value="${exercise.unitLength}" readonly></input>
@@ -240,7 +249,6 @@ function displayScheduleData(id, day, dayIndex) {
 
             case 'distance & time':
                 html = `
-                    <br />
                         <input type="number" class="exerciseDetails view distance" min="0" value="${exercise.distance}" readonly></input>
                         <input type="text" class="exerciseDetails view unitLength" value="${exercise.unitLength}" readonly></input> in 
                         <input type="number" class="exerciseDetails view time" min="0" max="999" value="${exercise.time}" readonly></input>
@@ -253,7 +261,6 @@ function displayScheduleData(id, day, dayIndex) {
                     break;
                 };
                 html = `
-                    <br />
                         <input type="number" class="exerciseDetails view reps" min="0" max="999" value="${exercise.reps}" readonly></input>
                 `
                 break;
@@ -263,7 +270,6 @@ function displayScheduleData(id, day, dayIndex) {
                     break;
                 };
                 html = `
-                    <br />
                         <input type="number" class="exerciseDetails view distance" min="0" value="${exercise.distance}" readonly></input>
                         <input type="text" class="exerciseDetails view unitLength" value="${exercise.unitLength}" readonly></input>
                 `;
@@ -273,18 +279,17 @@ function displayScheduleData(id, day, dayIndex) {
                     break;
                 };
                 html = `
-                    <br />
                         <input type="number" class="exerciseDetails view time" min="0" max="999" value="${exercise.time}" readonly></input>
                         <input type="text" class="exerciseDetails view unitTime" value="${exercise.unitTime}" readonly></input>
                 `;
                 break;
         }
 
-        $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]#${exerciseInfoId}`).find('form').append(html);
+        $(location).find(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]#${exerciseInfoId}`).find('form').append(html);
 
         if (exercise.comments) {
-            $(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]#${exerciseInfoId}`).find('form').append(`
-                <br /><i>Comments:</i> <input type="text" class="exerciseComments view" value="${exercise.comments}" readonly></input>
+            $(location).find(`.exercise-info[data-program-id="${id}"][data-exercise-id="${exerciseId}"]#${exerciseInfoId}`).find('form').append(`
+                <br />Comments: <input type="text" class="exerciseComments view" value="${exercise.comments}" readonly></input>
             `);
         }
     }
@@ -293,8 +298,14 @@ function displayScheduleData(id, day, dayIndex) {
 }
 
 function toggleProgramDisplay() {
-    $('main').on('click', '.js-show-program', function (event) {
+    $('main').on('click', '.js-toggle-program', function (event) {
         event.preventDefault();
+        if ($(this).css( "transform") == 'none' ){
+            $(this).css("transform","rotate(180deg)");
+        } else {
+            $(this).css("transform","");
+        }
+        
         const programDetails = $(this).closest('div').siblings(`.program-details`);
         $(programDetails).toggleClass('hidden');
         $(this).parent().siblings('form').toggleClass('editable');
@@ -324,7 +335,6 @@ function editExercise() {
             $(this).children('form').find('input').removeAttr('readonly');
             const programId = $(this).closest('.program-details').attr('data-program-id');
             $(this).find('.edit-form').append(addButtons(programId));
-            console.log('hehe')
         }
 
         const unitTimeInput = $(this).children('form').find('input.unitTime');
@@ -428,7 +438,6 @@ $('body').on('click', '.js-saveEdit-button', function (event) {
     // Editing Program Name 
     if ($(this).parent().siblings('form').hasClass('edit-program-name')) {
         const newProgName = $(this).parent().siblings('form').find('input').val();
-        console.log(newProgName);
         const id = $(this).closest('.program').attr('data-program-id');
 
         const obj = {};

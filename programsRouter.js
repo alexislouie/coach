@@ -129,34 +129,35 @@ router.post('/', jwtAuth, jsonParser, (req, res) => {
             }
 
             // validates sets, reps, distance, and time are numbers
-            if (exerciseList[j].sets) {
-                if (!(typeof exerciseList[j].sets === 'number')) {
-                    const message = 'Sets must be a number';
-                    console.error(message);
-                    return res.status(400).send(message);
-                }
-            }
-            if (exerciseList[j].reps) {
-                if (!(typeof exerciseList[j].reps === 'number')) {
-                    const message = 'Reps must be a number';
-                    console.error(message);
-                    return res.status(400).send(message);
-                }
-            }
-            if (exerciseList[j].distance) {
-                if (!(typeof exerciseList[j].distance === 'number')) {
-                    const message = 'Distance must be a number';
-                    console.error(message);
-                    return res.status(400).send(message);
-                }
-            }
-            if (exerciseList[j].time) {
-                if (!(typeof exerciseList[j].time === 'number')) {
-                    const message = 'Time must be a number';
-                    console.error(message);
-                    return res.status(400).send(message);
-                }
-            }
+            // if (exerciseList[j].sets) {
+            //     if (!(typeof exerciseList[j].sets === 'number')) {
+            //         const message = 'Sets must be a number';
+            //         console.error(message);
+            //         return res.status(400).send(message);
+            //     }
+            // }
+            // if (exerciseList[j].reps) {
+            //     console.log(typeof exerciseList[j].reps)
+            //     if (typeof exerciseList[j].sets != 'number') {
+            //         const message = 'Reps must be a number';
+            //         console.error(message);
+            //         return res.status(400).send(message);
+            //     }
+            // }
+            // if (exerciseList[j].distance) {
+            //     if (!(typeof exerciseList[j].distance === 'number')) {
+            //         const message = 'Distance must be a number';
+            //         console.error(message);
+            //         return res.status(400).send(message);
+            //     }
+            // }
+            // if (exerciseList[j].time) {
+            //     if (!(typeof exerciseList[j].time === 'number')) {
+            //         const message = 'Time must be a number';
+            //         console.error(message);
+            //         return res.status(400).send(message);
+            //     }
+            // }
 
         }
     }

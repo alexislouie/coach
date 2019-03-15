@@ -4,7 +4,6 @@ main {
     margin-left: auto;
     margin-right: auto;
     background-color: white;
-    /* box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); */
     border-radius: 10px;
 }
 
@@ -25,15 +24,15 @@ main {
 label {
     letter-spacing: 1px;
     font-size: 10pt;
-    font-weight: bold; 
+    font-weight: bold;
     color: grey;
 }
 
 button {
     font-family: Lato;
     padding: 10px;
-    /* background-color: white; */
 }
+
 .remove-button {
     color: #b2b2b2;
     font-weight: bold;
@@ -53,6 +52,7 @@ button {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
+
 .save-program-button {
     font-size: 10pt;
     color: #6FD6FF;
@@ -68,15 +68,12 @@ button {
 
 .save-program-button:hover {
     background-color: #BFF098;
-    /* background-image: linear-gradient(to right, #BFF098, #6FD6FF); */
     color: white;
 }
 
 .add-progLength-button {
     letter-spacing: 1px;
-    /* box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); */
-    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.302), 0 2px 6px 2px rgba(60,64,67,0.149);
-
+    box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.302), 0 2px 6px 2px rgba(60, 64, 67, 0.149);
     border: 0px;
     border-top: solid 1px #ededed;
     border-radius: 0px 10px 10px 0px;
@@ -89,9 +86,7 @@ button {
 
 .add-exercise-button {
     letter-spacing: 1px;
-    /* box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); */
-        box-shadow: 0 1px 2px 0 rgba(60,64,67,0.302), 0 2px 6px 2px rgba(60,64,67,0.149);
-
+    box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.302), 0 2px 6px 2px rgba(60, 64, 67, 0.149);
     border: 0px;
     border-radius: 0px 10px 10px 0px;
     margin-top: 7px;
@@ -111,27 +106,24 @@ form {
     padding-right: 10px;
     padding-bottom: 5px;
 }
+
 fieldset {
     border: none;
     margin-bottom: 25px;
 }
+
 input {
     font-family: sans-serif;
     font-weight: 100;
     color: grey;
     font-size: 12pt;
-    /* margin-top: 5px; */
     margin-left: 15px;
-    /* height: 30px;
-    border: 0px none; */
-    /* box-shadow: 0px 2px 7px #d1d1d1;
-    border-radius: 0px 15px 15px 0px; */
-
     border-top: 0;
     border-left: 0;
     border-right: 0;
     border-bottom: solid 1px lightgrey;
 }
+
 select {
     font-family: Lato;
     font-size: 9pt;
@@ -148,14 +140,10 @@ select {
 .programLength {
     width: 15%;
 }
+
 .programName {
     width: 95%;
     height: 30px;
-    /* margin-top: 5px;
-    border: 0px none;
-    box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.1);
-    border-radius: 0px 15px 15px 0px; */
-
     border-top: 0;
     border-left: 0;
     border-right: 0;
@@ -169,7 +157,6 @@ select {
 }
 
 .day {
-    /* box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); */
     margin-bottom: 10px;
 }
 
@@ -181,12 +168,11 @@ select {
     width: 98%;
     padding: 5px;
     margin-top: 7px;
-    margin-left: auto; 
+    margin-left: auto;
     margin-right: auto;
     position: relative;
-    /* box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); */
     border-radius: 10px;
-    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.302), 0 2px 6px 2px rgba(60,64,67,0.149);
+    box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.302), 0 2px 6px 2px rgba(60, 64, 67, 0.149);
 }
 
 .exercise-details {
@@ -199,7 +185,8 @@ select {
     color: grey;
     margin: 5px;
 }
-.errors > li {
+
+.errors>li {
     margin-left: 15px;
 }
 

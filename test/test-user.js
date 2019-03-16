@@ -224,10 +224,10 @@ describe('User API resource', function () {
 
     describe('PATCH endpoint', function () {
         it('should add program to savedProgram field', function () {
-            return Exercise
+            return Program
                 .findOne()
-                .then(exercise => {
-                    let updateData = { op: "add", path: "savedPrograms", value: exercise._id };
+                .then(program => {
+                    let updateData = { op: "add", path: "savedPrograms", value: program._id };
                     return updateData;
                 })
                 .then(updateData => {
@@ -251,10 +251,10 @@ describe('User API resource', function () {
         });
 
         it('should remove program from savedProgram field', function () {
-            return Exercise
+            return Program
                 .findOne()
-                .then(exercise => {
-                    const updateData = { op: "add", path: "savedPrograms", value: exercise._id };
+                .then(program => {
+                    const updateData = { op: "add", path: "savedPrograms", value: program._id };
                     return updateData;
                 })
                 .then(updateData => {

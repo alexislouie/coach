@@ -131,12 +131,3 @@ main {
         display: none;
     }
 }
-
-@media screen and (max-width: 480px) {
-    header span {
-        font-size: 20pt;
-    }
-    .profilePrograms .search-results {
-        width: 100%;
-    }
-}

@@ -17,7 +17,7 @@ $('main').on('click', '.js-search-button', function (event) {
 
     $('.js-search-results').removeAttr('hidden');
 
-    fetch(`http://localhost:8080/programs?${searchCat}=${q}`,
+    fetch(`/programs?${searchCat}=${q}`,
         {
             method: 'GET',
             headers: {
@@ -67,7 +67,7 @@ function displayPrograms(program) {
 }
 
 function addSaveButton(programId) {
-    fetch(`http://localhost:8080/users/${id}`, {
+    fetch(`/users/${id}`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${bearer}`
@@ -163,7 +163,7 @@ function handleFetchButton() {
 }
 
 function fetchProgram(id) {
-    fetch(`http://localhost:8080/programs/${id}`, {
+    fetch(`/programs/${id}`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${bearer}`

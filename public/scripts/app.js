@@ -11,7 +11,7 @@ if (!bearer) {
 }
 
 function displayProfile() {
-    fetch(`http://localhost:8080/users/${id}`,
+    fetch(`/users/${id}`,
         {
             method: 'GET',
             headers: {
@@ -105,7 +105,7 @@ function displayPrograms(userPrograms, savedPrograms) {
     }
     else {
         savedPrograms.forEach(program => {
-            fetch(`http://localhost:8080/programs/${program}`,
+            fetch(`/programs/${program}`,
                 {
                     method: 'GET',
                     headers: {
@@ -145,7 +145,7 @@ function handleFetchButton() {
 }
 
 function fetchProgram(id, container) {
-    fetch(`http://localhost:8080/programs/${id}`, {
+    fetch(`/programs/${id}`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${bearer}`

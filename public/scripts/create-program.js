@@ -142,7 +142,7 @@ function addExercise() {
             if (!exerciseName.length) {
                 $(`#${inputId}`).val('');
             }
-            fetch('http://localhost:8080/exercises',
+            fetch('/exercises',
                 {
                     method: 'POST',
                     headers: {

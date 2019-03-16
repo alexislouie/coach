@@ -1,7 +1,7 @@
 const bearer = localStorage.getItem('authToken');
 const id = localStorage.getItem('userId');
 
-fetch(`http://localhost:8080/auth/logout`,
+fetch(`/auth/logout`,
         {
             method: 'GET',
             headers: {

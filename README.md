@@ -39,12 +39,13 @@ Demo
 
 Tech Stack
 ----
-Express
-Javascript
-jQuery
-HTML5/CSS3
-MongoDB
-Heroku
+- Node.js/Express
+- Javascript
+- jQuery
+- HTML5
+- CSS3
+- MongoDB
+- Heroku
 
 Author
 ------

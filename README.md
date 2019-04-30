@@ -11,19 +11,19 @@ Whether a novice or bonafide gym rat, users can search our catalog of programs a
 Screenshots 
 -----------
 Home Screen:
-![image of home screen](/homescreen.png)
+![image of home screen](/public/images/homescreen.png)
 
 Login Screen: 
-![image of login page section](/login.png)
+![image of login page section](/public/images//login.png)
 
 Profile Page:
-![image of profile page](/profile.png)
+![image of profile page](/public/images//profile.png)
 
 Search Page: 
-![image of profile page](/search.png)
+![image of profile page](/public/images//search.png)
 
 Create Program Page: 
-![image of profile page](/create-program.png)
+![image of profile page](/public/images//create-program.png)
 
 
 Summary

@@ -1,0 +1,5 @@
+{"_id":{"$oid":"5c0ac48e458c2ac67bcb62d3"},"firstName":"Alexis","lastName":"Louie","userName":"alouie1020"}
+{"_id":{"$oid":"5c169b6208ac93820bdbf0a3"},"firstName":"Squilliam","lastName":"Fancyson","userName":"squillz","__v":0}
+{"_id":{"$oid":"5c1bf2b3a1abd908dd813630"},"firstName":"A","lastName":"Lou","userName":"alexis","password":"$2a$10$mVZSbfc7JGBHjtasurw0P.xd723N4hTYsxjdrLaaYEx4NOFENoU3.","__v":21,"savedPrograms":[{"$oid":"5c6a3db1b64db81138d50a80"},{"$oid":"5c859466551138b1713a3815"},{"$oid":"5c313aa5d82ebe379ef3df73"},{"$oid":"5c893fe1e11a9fdc51600d73"},{"$oid":"5c8b22a253eeba00588303ac"}]}
+{"_id":{"$oid":"5c40dd16c3fae01ccc4840b4"},"savedPrograms":[],"firstName":"W","lastName":"W","userName":"testusername","password":"$2a$10$ep1qx2sT29dL2qCjxv8v8eks5lPgdsSfWZH01DBmvG3zg1tWicUcO","__v":0}
+{"_id":{"$oid":"5c6cc89d44d0ba28b564d813"},"savedPrograms":[],"firstName":"Alexis","lastName":"Louie","userName":"newtestuser890","password":"$2a$10$4nzUDl885IXv2sPpnJNhhONhtzMROepNYKBG8SzWyybOuy6levuPy","__v":2}

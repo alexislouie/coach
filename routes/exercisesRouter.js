@@ -6,7 +6,7 @@ const jsonParser = bodyParser.json();
 
 const jwtAuth = passport.authenticate('jwt', { session: false });
 
-const { Exercise } = require('./models');
+const { Exercise } = require('../models');
 
 router.get('/', (req, res) => {
     const filters = {};

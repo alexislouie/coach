@@ -1,13 +1,14 @@
 "use strict";
 require('dotenv').config();
-const express = require("express");
+const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const passport = require('passport');
 
-const userRouter = require('./usersRouter');
-const programsRouter = require('./programsRouter');
-const exercisesRouter = require('./exercisesRouter');
+const userRouter = require('./routes/usersRouter');
+const programsRouter = require('./routes/programsRouter');
+const exercisesRouter = require('./routes/exercisesRouter');
+
 const { router: authRouter, localStrategy, jwtStrategy } = require('./auth');
 
 mongoose.Promise = global.Promise;
@@ -33,7 +34,7 @@ app.use(function (req, res, next) {
 passport.use(localStrategy);
 passport.use(jwtStrategy);
 
-app.use(express.static("public"));
+app.use(express.static('public'));
 
 app.use('/users', userRouter);
 app.use('/programs', programsRouter);

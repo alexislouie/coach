@@ -6,7 +6,7 @@ const jsonParser = bodyParser.json();
 
 const jwtAuth = passport.authenticate('jwt', { session: false });
 
-const { Program, User } = require('./models');
+const { Program, User } = require('../models');
 
 // when searching
 router.get('/', jwtAuth, (req, res) => {
